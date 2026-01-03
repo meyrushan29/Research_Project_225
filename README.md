@@ -61,4 +61,3 @@ Our system provides:
 
 ---
 
-## Repository Structure
