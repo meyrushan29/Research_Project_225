@@ -13,8 +13,17 @@ class HealthAnalyzerApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'AI Health Analyzer',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomeScreen(),
+      theme: ThemeData(
+        useMaterial3: true,
+        primaryColor: const Color(0xFF1E88E5),
+        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Color(0xFF1E88E5),
+          foregroundColor: Colors.white,
+          centerTitle: true,
+        ),
+      ),
+      home: const HomeScreenCommon(),
     );
   }
 }

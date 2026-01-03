@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../services/location_service.dart';
+import '../../services/api_service.dart';
+import '../../services/location_service.dart';
 import 'combined_result_screen.dart';
 
 class FormScreen extends StatefulWidget {
