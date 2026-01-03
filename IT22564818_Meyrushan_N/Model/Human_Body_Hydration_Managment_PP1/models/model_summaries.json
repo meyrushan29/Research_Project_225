@@ -1,0 +1,37 @@
+{
+  "regressor": {
+    "n_estimators": 300,
+    "max_depth": 15,
+    "min_samples_split": 5,
+    "min_samples_leaf": 2,
+    "n_features": 18,
+    "feature_importance_count": 18
+  },
+  "hydration_classifier": {
+    "n_estimators": 300,
+    "max_depth": 15,
+    "min_samples_split": 5,
+    "min_samples_leaf": 2,
+    "n_classes": 4,
+    "classes": [
+      0,
+      1,
+      2,
+      3
+    ]
+  },
+  "disease_classifier": {
+    "n_estimators": 300,
+    "max_depth": 15,
+    "min_samples_split": 5,
+    "min_samples_leaf": 2,
+    "n_classes": 5,
+    "classes": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  }
+}

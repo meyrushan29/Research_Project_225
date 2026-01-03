@@ -1,0 +1,19 @@
+feature,importance
+Water_Intake_Last_4_Hours,0.4305614248964831
+Urine Color (Most Recent Urination),0.1264256818839442
+Humidity_%,0.11035336072785469
+Age,0.08793595261340056
+Weight,0.07741195755665917
+Temperature_C,0.06700692497014397
+Height,0.06370406755482384
+Exercise Time (minutes) in Last 4 Hours,0.03660062979669053
+Dizziness (Right Now)_Yes,0.0
+Sweating Level (Last 4 Hours)_Low,0.0
+Headache (Right Now)_Yes,0.0
+Fatigue / Tiredness (Right Now)_Yes,0.0
+Physical_Activity_Level_Low,0.0
+Thirsty (Right Now)_Yes,0.0
+Urinated (Last 4 Hours)_Yes,0.0
+Physical_Activity_Level_Moderate,0.0
+Gender_Male,0.0
+Sweating Level (Last 4 Hours)_Moderate,0.0
