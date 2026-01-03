@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../widgets/hydration_bar.dart';
+import '../../widgets/hydration_bar.dart';
 
 class CombinedResultScreen extends StatelessWidget {
   final Map<String, dynamic> formResult;
