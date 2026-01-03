@@ -1,0 +1,166 @@
+2025-12-28 05:49:32,578 - hydration_ml - INFO - Data cleaned. New shape: (307, 22)
+2025-12-28 05:51:46,240 - hydration_ml - INFO - Data cleaned. New shape: (307, 22)
+2025-12-28 05:51:46,308 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-28 05:51:46,348 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 05:51:46,349 - hydration_ml - INFO - Number of features: 45
+2025-12-28 05:51:46,368 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 05:51:46,368 - hydration_ml - INFO - Number of features: 45
+2025-12-28 05:51:46,371 - hydration_ml - INFO - Features shape: (307, 42)
+2025-12-28 05:51:46,371 - hydration_ml - INFO - Regression target shape: (307,)
+2025-12-28 05:51:46,371 - hydration_ml - INFO - Hydration classification target shape: (307,)
+2025-12-28 05:51:46,371 - hydration_ml - INFO - Disease classification target shape: (307,)
+2025-12-28 05:51:46,371 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-28 05:51:46,372 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-28 05:51:46,375 - hydration_ml - INFO - Train shapes - X: (245, 42), y_reg: (245,), y_clf: (245,), y_disease: (245,)
+2025-12-28 05:51:46,375 - hydration_ml - INFO - Test shapes - X: (62, 42), y_reg: (62,), y_clf: (62,), y_disease: (62,)
+2025-12-28 05:54:04,375 - hydration_ml - INFO - Data cleaned. New shape: (307, 22)
+2025-12-28 05:54:04,413 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-28 05:54:04,446 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 05:54:04,446 - hydration_ml - INFO - Number of features: 45
+2025-12-28 05:54:04,478 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 05:54:04,479 - hydration_ml - INFO - Number of features: 45
+2025-12-28 05:54:04,481 - hydration_ml - INFO - Features shape: (307, 42)
+2025-12-28 05:54:04,481 - hydration_ml - INFO - Regression target shape: (307,)
+2025-12-28 05:54:04,481 - hydration_ml - INFO - Hydration classification target shape: (307,)
+2025-12-28 05:54:04,481 - hydration_ml - INFO - Disease classification target shape: (307,)
+2025-12-28 05:54:04,483 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-28 05:54:04,483 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-28 05:54:04,485 - hydration_ml - INFO - Train shapes - X: (245, 42), y_reg: (245,), y_clf: (245,), y_disease: (245,)
+2025-12-28 05:54:04,485 - hydration_ml - INFO - Test shapes - X: (62, 42), y_reg: (62,), y_clf: (62,), y_disease: (62,)
+2025-12-28 05:58:39,822 - hydration_ml - INFO - Data cleaned. New shape: (307, 22)
+2025-12-28 05:58:39,860 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-28 05:58:39,896 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 05:58:39,896 - hydration_ml - INFO - Number of features: 45
+2025-12-28 05:58:39,936 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 05:58:39,936 - hydration_ml - INFO - Number of features: 45
+2025-12-28 05:58:39,941 - hydration_ml - INFO - Features shape: (307, 42)
+2025-12-28 05:58:39,941 - hydration_ml - INFO - Regression target shape: (307,)
+2025-12-28 05:58:39,942 - hydration_ml - INFO - Hydration classification target shape: (307,)
+2025-12-28 05:58:39,942 - hydration_ml - INFO - Disease classification target shape: (307,)
+2025-12-28 05:58:39,942 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-28 05:58:39,942 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-28 05:58:39,945 - hydration_ml - INFO - Train shapes - X: (245, 42), y_reg: (245,), y_clf: (245,), y_disease: (245,)
+2025-12-28 05:58:39,945 - hydration_ml - INFO - Test shapes - X: (62, 42), y_reg: (62,), y_clf: (62,), y_disease: (62,)
+2025-12-28 06:15:02,498 - hydration_ml - INFO - Data cleaned. New shape: (307, 22)
+2025-12-28 06:15:02,522 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-28 06:15:02,539 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 06:15:02,539 - hydration_ml - INFO - Number of features: 45
+2025-12-28 06:15:02,556 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (307, 45)
+2025-12-28 06:15:02,556 - hydration_ml - INFO - Number of features: 45
+2025-12-28 06:15:02,557 - hydration_ml - INFO - Features shape: (307, 42)
+2025-12-28 06:15:02,557 - hydration_ml - INFO - Regression target shape: (307,)
+2025-12-28 06:15:02,557 - hydration_ml - INFO - Hydration classification target shape: (307,)
+2025-12-28 06:15:02,557 - hydration_ml - INFO - Disease classification target shape: (307,)
+2025-12-28 06:15:02,557 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-28 06:15:02,557 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-28 06:15:02,559 - hydration_ml - INFO - Train shapes - X: (245, 42), y_reg: (245,), y_clf: (245,), y_disease: (245,)
+2025-12-28 06:15:02,559 - hydration_ml - INFO - Test shapes - X: (62, 42), y_reg: (62,), y_clf: (62,), y_disease: (62,)
+2025-12-31 15:39:53,077 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2025-12-31 15:39:53,178 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-31 15:39:53,200 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 15:39:53,200 - hydration_ml - INFO - Number of features: 46
+2025-12-31 15:39:53,220 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 15:39:53,220 - hydration_ml - INFO - Number of features: 46
+2025-12-31 15:39:53,222 - hydration_ml - INFO - Features shape: (1608, 43)
+2025-12-31 15:39:53,222 - hydration_ml - INFO - Regression target shape: (1608,)
+2025-12-31 15:39:53,222 - hydration_ml - INFO - Hydration classification target shape: (1608,)
+2025-12-31 15:39:53,222 - hydration_ml - INFO - Disease classification target shape: (1608,)
+2025-12-31 15:39:53,222 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-31 15:39:53,222 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-31 15:39:53,224 - hydration_ml - INFO - Train shapes - X: (1286, 43), y_reg: (1286,), y_clf: (1286,), y_disease: (1286,)
+2025-12-31 15:39:53,224 - hydration_ml - INFO - Test shapes - X: (322, 43), y_reg: (322,), y_clf: (322,), y_disease: (322,)
+2025-12-31 16:03:34,662 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2025-12-31 16:03:34,760 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-31 16:03:34,783 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 16:03:34,784 - hydration_ml - INFO - Number of features: 46
+2025-12-31 16:03:34,803 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 16:03:34,803 - hydration_ml - INFO - Number of features: 46
+2025-12-31 16:03:34,804 - hydration_ml - INFO - Features shape: (1608, 43)
+2025-12-31 16:03:34,805 - hydration_ml - INFO - Regression target shape: (1608,)
+2025-12-31 16:03:34,805 - hydration_ml - INFO - Hydration classification target shape: (1608,)
+2025-12-31 16:03:34,805 - hydration_ml - INFO - Disease classification target shape: (1608,)
+2025-12-31 16:03:34,805 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-31 16:03:34,805 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-31 16:03:34,807 - hydration_ml - INFO - Train shapes - X: (1286, 43), y_reg: (1286,), y_clf: (1286,), y_disease: (1286,)
+2025-12-31 16:03:34,807 - hydration_ml - INFO - Test shapes - X: (322, 43), y_reg: (322,), y_clf: (322,), y_disease: (322,)
+2025-12-31 17:29:34,623 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2025-12-31 17:29:34,710 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-31 17:29:34,737 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 17:29:34,737 - hydration_ml - INFO - Number of features: 46
+2025-12-31 17:29:34,755 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 17:29:34,755 - hydration_ml - INFO - Number of features: 46
+2025-12-31 17:29:34,757 - hydration_ml - INFO - Features shape: (1608, 43)
+2025-12-31 17:29:34,757 - hydration_ml - INFO - Regression target shape: (1608,)
+2025-12-31 17:29:34,757 - hydration_ml - INFO - Hydration classification target shape: (1608,)
+2025-12-31 17:29:34,757 - hydration_ml - INFO - Disease classification target shape: (1608,)
+2025-12-31 17:29:34,757 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-31 17:29:34,757 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-31 17:29:34,761 - hydration_ml - INFO - Train shapes - X: (1286, 43), y_reg: (1286,), y_clf: (1286,), y_disease: (1286,)
+2025-12-31 17:29:34,762 - hydration_ml - INFO - Test shapes - X: (322, 43), y_reg: (322,), y_clf: (322,), y_disease: (322,)
+2025-12-31 17:56:13,336 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2025-12-31 17:56:13,450 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-31 17:56:13,474 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 17:56:13,474 - hydration_ml - INFO - Number of features: 46
+2025-12-31 17:56:13,495 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 17:56:13,495 - hydration_ml - INFO - Number of features: 46
+2025-12-31 17:56:13,496 - hydration_ml - INFO - Features shape: (1608, 43)
+2025-12-31 17:56:13,496 - hydration_ml - INFO - Regression target shape: (1608,)
+2025-12-31 17:56:13,496 - hydration_ml - INFO - Hydration classification target shape: (1608,)
+2025-12-31 17:56:13,496 - hydration_ml - INFO - Disease classification target shape: (1608,)
+2025-12-31 17:56:13,497 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-31 17:56:13,497 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-31 17:56:13,499 - hydration_ml - INFO - Train shapes - X: (1286, 43), y_reg: (1286,), y_clf: (1286,), y_disease: (1286,)
+2025-12-31 17:56:13,499 - hydration_ml - INFO - Test shapes - X: (322, 43), y_reg: (322,), y_clf: (322,), y_disease: (322,)
+2025-12-31 19:47:41,610 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2025-12-31 19:47:41,711 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-31 19:47:41,733 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 19:47:41,733 - hydration_ml - INFO - Number of features: 46
+2025-12-31 19:47:41,755 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 19:47:41,755 - hydration_ml - INFO - Number of features: 46
+2025-12-31 19:47:41,756 - hydration_ml - INFO - Features shape: (1608, 43)
+2025-12-31 19:47:41,756 - hydration_ml - INFO - Regression target shape: (1608,)
+2025-12-31 19:47:41,756 - hydration_ml - INFO - Hydration classification target shape: (1608,)
+2025-12-31 19:47:41,756 - hydration_ml - INFO - Disease classification target shape: (1608,)
+2025-12-31 19:47:41,758 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-31 19:47:41,758 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-31 19:47:41,760 - hydration_ml - INFO - Train shapes - X: (1286, 43), y_reg: (1286,), y_clf: (1286,), y_disease: (1286,)
+2025-12-31 19:47:41,760 - hydration_ml - INFO - Test shapes - X: (322, 43), y_reg: (322,), y_clf: (322,), y_disease: (322,)
+2025-12-31 19:48:43,305 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2025-12-31 19:48:43,393 - hydration_ml - INFO - Caffeine Intake and Heart Rate columns removed successfully
+2025-12-31 19:48:43,415 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 19:48:43,415 - hydration_ml - INFO - Number of features: 46
+2025-12-31 19:48:43,432 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2025-12-31 19:48:43,433 - hydration_ml - INFO - Number of features: 46
+2025-12-31 19:48:43,434 - hydration_ml - INFO - Features shape: (1608, 43)
+2025-12-31 19:48:43,434 - hydration_ml - INFO - Regression target shape: (1608,)
+2025-12-31 19:48:43,434 - hydration_ml - INFO - Hydration classification target shape: (1608,)
+2025-12-31 19:48:43,435 - hydration_ml - INFO - Disease classification target shape: (1608,)
+2025-12-31 19:48:43,435 - hydration_ml - INFO - Hydration classes: ['High' 'Low' 'Medium' 'Very Low']
+2025-12-31 19:48:43,435 - hydration_ml - INFO - Disease classes: ['Diabetes' 'Heart-related disease' 'Hypertension (High Blood Pressure)'
+ 'Kidney-related disease' 'No known disease']
+2025-12-31 19:48:43,436 - hydration_ml - INFO - Train shapes - X: (1286, 43), y_reg: (1286,), y_clf: (1286,), y_disease: (1286,)
+2025-12-31 19:48:43,436 - hydration_ml - INFO - Test shapes - X: (322, 43), y_reg: (322,), y_clf: (322,), y_disease: (322,)
+2026-01-03 06:11:40,833 - hydration_ml - INFO - Cleaned dataset shape: (1608, 22)
+2026-01-03 06:11:40,911 - hydration_ml - INFO - Final labeled dataset saved
+2026-01-03 06:11:40,911 - hydration_ml - INFO - Starting feature engineering
+2026-01-03 06:11:40,934 - hydration_ml - INFO - Feature engineering completed | Features: 45
+2026-01-03 06:11:40,934 - hydration_ml - INFO - Computing health risk indicators
+2026-01-03 06:11:40,942 - hydration_ml - INFO - Train shape: (1286, 40) | Test shape: (322, 40)
+2026-01-03 06:17:43,245 - hydration_ml - INFO - Cleaned dataset shape: (1608, 22)
+2026-01-03 06:17:43,323 - hydration_ml - INFO - Final labeled dataset saved
+2026-01-03 06:17:43,323 - hydration_ml - INFO - Starting feature engineering
+2026-01-03 06:17:43,346 - hydration_ml - INFO - Feature engineering completed | Features: 45
+2026-01-03 06:17:43,347 - hydration_ml - INFO - Computing health risk indicators
+2026-01-03 06:17:43,353 - hydration_ml - INFO - Train shape: (1286, 40) | Test shape: (322, 40)
+2026-01-03 07:55:30,676 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-03 07:55:30,752 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-03 07:55:30,755 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
