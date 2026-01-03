@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/home_screen_comman.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const HealthAnalyzerApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class HealthAnalyzerApp extends StatelessWidget {
+  const HealthAnalyzerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Hydration App',
+      title: 'AI Health Analyzer',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const HomeScreen(),
     );
