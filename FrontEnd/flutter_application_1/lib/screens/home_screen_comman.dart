@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
-// Correct imports (NO aliases needed)
 import 'fitness/fitness_home_screen.dart';
 import 'hydration/hydration_home_screen.dart';
-import 'mentalHealth/mental_health_screen.dart';
+import 'mentalHealth/home_screen.dart';
 
 class HomeScreenCommon extends StatelessWidget {
   const HomeScreenCommon({super.key});
@@ -26,7 +24,7 @@ class HomeScreenCommon extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // ---------------- HEADER ----------------
+              // Header
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
@@ -70,7 +68,7 @@ class HomeScreenCommon extends StatelessWidget {
                 ),
               ),
 
-              // ---------------- MODULE CARDS ----------------
+              // Module Cards
               Expanded(
                 child: Container(
                   margin: const EdgeInsets.only(top: 20),
@@ -86,8 +84,6 @@ class HomeScreenCommon extends StatelessWidget {
                     child: Column(
                       children: [
                         const SizedBox(height: 10),
-
-                        // Hydration
                         _buildModuleCard(
                           context,
                           title: "Hydration Management",
@@ -100,16 +96,12 @@ class HomeScreenCommon extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const HydrationHomeScreen(),
+                                builder: (_) => const HydrationHomeScreen(),
                               ),
                             );
                           },
                         ),
-
                         const SizedBox(height: 16),
-
-                        // Fitness
                         _buildModuleCard(
                           context,
                           title: "Fitness Optimization",
@@ -122,16 +114,12 @@ class HomeScreenCommon extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const HomeScreen(),
+                                builder: (_) => const HomeScreen(),
                               ),
                             );
                           },
                         ),
-
                         const SizedBox(height: 16),
-
-                        // Mental Health
                         _buildModuleCard(
                           context,
                           title: "Mental Health Assessment",
@@ -144,8 +132,7 @@ class HomeScreenCommon extends StatelessWidget {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) =>
-                                    const MentalHealthScreen(),
+                                builder: (_) => const HomePage(),
                               ),
                             );
                           },
@@ -162,7 +149,6 @@ class HomeScreenCommon extends StatelessWidget {
     );
   }
 
-  // ---------------- CARD WIDGET ----------------
   Widget _buildModuleCard(
     BuildContext context, {
     required String title,
