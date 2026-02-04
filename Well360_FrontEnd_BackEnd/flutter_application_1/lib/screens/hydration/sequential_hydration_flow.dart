@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,12 +76,19 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
 
   void _setTimeSlot() {
     final hour = DateTime.now().hour;
-    if (hour >= 0 && hour < 4) timeSlot = "Midnight-4 AM";
-    else if (hour >= 4 && hour < 8) timeSlot = "4 AM-8 AM";
-    else if (hour >= 8 && hour < 12) timeSlot = "8 AM-12 PM";
-    else if (hour >= 12 && hour < 16) timeSlot = "12 PM-4 PM";
-    else if (hour >= 16 && hour < 20) timeSlot = "4 PM-8 PM";
-    else timeSlot = "8 PM-Midnight";
+    if (hour >= 0 && hour < 4) {
+      timeSlot = "Midnight-4 AM";
+    } else if (hour >= 4 && hour < 8) {
+      timeSlot = "4 AM-8 AM";
+    } else if (hour >= 8 && hour < 12) {
+      timeSlot = "8 AM-12 PM";
+    } else if (hour >= 12 && hour < 16) {
+      timeSlot = "12 PM-4 PM";
+    } else if (hour >= 16 && hour < 20) {
+      timeSlot = "4 PM-8 PM";
+    } else {
+      timeSlot = "8 PM-Midnight";
+    }
     timeSlotController.text = timeSlot;
   }
 
@@ -104,7 +110,9 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
 
   // ==================== LOGIC: STEP 1 -> 2 ====================
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     setState(() => _loading = true);
 
     try {
@@ -151,8 +159,11 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
       }
 
       String riskLevel = "Normal";
-      if (recommended > 2.0) riskLevel = "High Dehydration";
-      else if (recommended > 1.0) riskLevel = "Mild Dehydration";
+      if (recommended > 2.0) {
+        riskLevel = "High Dehydration";
+      } else if (recommended > 1.0) {
+        riskLevel = "Mild Dehydration";
+      }
 
       _formResult = {
         "recommended_total_water_liters": recommended,
@@ -501,7 +512,7 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
                  _timer?.cancel();
                  setState(() { _remainingSeconds = 0; _timerComplete = true; });
                },
-               child: Text("Skip Timer (Testing)", style: TextStyle(color: Colors.white30))
+               child: const Text("Skip Timer (Testing)", style: TextStyle(color: Colors.white30))
              )
         ],
       ),
@@ -615,7 +626,7 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
 
   Widget _modernDropdown(String label, String val, List<String> items, ValueChanged<String> onChanged) {
     return DropdownButtonFormField<String>(
-      value: val,
+      initialValue: val,
       dropdownColor: const Color(0xFF1E1E1E),
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(

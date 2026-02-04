@@ -112,7 +112,9 @@ class _LipImageScreenState extends State<LipImageScreen> {
         ),
       );
     } finally {
-      if (mounted) setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 

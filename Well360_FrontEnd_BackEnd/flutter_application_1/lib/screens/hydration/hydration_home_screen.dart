@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'form_screen.dart';
 import 'lip_image_screen.dart';
 import 'package:flutter_application_1/screens/history/history_screen.dart';
-import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
 import '../../services/hydration_results_service.dart' as import_services;
 import 'combined_result_screen.dart' as import_results;
@@ -65,37 +64,81 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
     
     final now = DateTime.now();
     final currentHour = now.hour;
-    List<String> skipped = [];
-
-    // Check from 6 AM to Current Hour
-    for (int h = 6; h <= currentHour; h++) {
-      // Find data for this hour
-      // hourlyData format: [{"hour": "06:00", "liters": 0.5}, ...]
-      final hourStr = "${h.toString().padLeft(2, '0')}:00";
-      final entry = hourlyData.firstWhere(
-        (e) => e['hour'] == hourStr, 
-        orElse: () => null
-      );
+    List<String> skippedSlots = [];
+    
+    // Define time slots
+    final slots = [
+      {"name": "Midnight-4 AM", "start": 0, "end": 3},
+      {"name": "4 AM-8 AM", "start": 4, "end": 7},
+      {"name": "8 AM-12 PM", "start": 8, "end": 11},
+      {"name": "12 PM-4 PM", "start": 12, "end": 15},
+      {"name": "4 PM-8 PM", "start": 16, "end": 19},
+      {"name": "8 PM-Midnight", "start": 20, "end": 23},
+    ];
+    
+    // Check each time slot
+    for (var slot in slots) {
+      int start = slot["start"] as int;
+      int end = slot["end"] as int;
+      String slotName = slot["name"] as String;
       
-      double intake = 0.0;
-      if (entry != null) {
-        intake = (entry['liters'] is num) ? entry['liters'].toDouble() : 0.0;
+      // Only check slots that have already passed
+      // Skip if the current time hasn't reached the end of this slot
+      if (currentHour < end) continue;
+      
+      // Check if ALL hours in this slot have zero intake
+      bool allZero = true;
+      for (int h = start; h <= end; h++) {
+        final hourStr = "${h.toString().padLeft(2, '0')}:00";
+        final entry = hourlyData.firstWhere(
+          (e) => e['hour'] == hourStr, 
+          orElse: () => null
+        );
+        
+        double intake = 0.0;
+        if (entry != null) {
+          intake = (entry['liters'] is num) ? entry['liters'].toDouble() : 0.0;
+        }
+        
+        if (intake > 0) {
+          allZero = false;
+          break;
+        }
       }
-
-      if (intake <= 0) {
-        skipped.add(hourStr);
+      
+      // If entire slot has zero intake, mark it as skipped
+      if (allZero) {
+        skippedSlots.add(slotName);
       }
     }
-    _skippedHours = skipped;
+    
+    _skippedHours = skippedSlots;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ... existing Scaffold setup
+      backgroundColor: const Color(0xFF050505),
+      extendBodyBehindAppBar: true,
       body: Stack(
         children: [
-          // ... background
+          // 1. Base Background
+          Container(
+             decoration: const BoxDecoration(
+               gradient: LinearGradient(
+                 begin: Alignment.topCenter,
+                 end: Alignment.bottomCenter,
+                 colors: [Color(0xFF050505), Color(0xFF101015)],
+               ),
+             ),
+          ),
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.1,
+              child: CustomPaint(painter: GridPainter()),
+            ),
+          ),
+          
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -207,7 +250,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
               const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 20),
               const SizedBox(width: 10),
               Text(
-                "MISSED INTAKE HOURS",
+                "MISSED TIME SLOTS",
                 style: GoogleFonts.orbitron(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
               ),
             ],

@@ -250,7 +250,7 @@ class _ResultScreenState extends State<ResultScreen> {
                                   _loadVideo(_heatmapEnabled ? _heatmapVideoUrl : _normalVideoUrl);
                                 });
                               },
-                              activeColor: Colors.purpleAccent,
+                              activeThumbColor: Colors.purpleAccent,
                               activeTrackColor: Colors.purpleAccent.withValues(alpha: 0.3),
                               inactiveThumbColor: Colors.grey,
                               inactiveTrackColor: Colors.grey[800],
@@ -268,7 +268,7 @@ class _ResultScreenState extends State<ResultScreen> {
               color: Colors.white.withValues(alpha: 0.05),
               child: Row(
                 children: [
-                  Icon(Icons.video_library, color: Colors.cyanAccent, size: 20),
+                  const Icon(Icons.video_library, color: Colors.cyanAccent, size: 20),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -485,7 +485,7 @@ class _ResultScreenState extends State<ResultScreen> {
         children: [
           Row(
             children: [
-               Icon(Icons.lightbulb_outline, color: Colors.yellowAccent, size: 20),
+               const Icon(Icons.lightbulb_outline, color: Colors.yellowAccent, size: 20),
                const SizedBox(width: 10),
                Text(
                 'AI INSIGHTS',

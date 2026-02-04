@@ -1,5 +1,4 @@
 // lib/screens/history/history_screen.dart
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/services/api_service.dart'; 
-import 'package:intl/intl.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -25,7 +23,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   
   bool _loading = true;
   late TabController _tabController;
-  bool _showTodayOnly = false;
+  final bool _showTodayOnly = false;
   
   // Trend State: 0 = Today, 1 = Weekly, 2 = Monthly
   int _trendViewMode = 0; 
@@ -266,7 +264,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
              ),
              child: BarChart(
                BarChartData(
-                 gridData: FlGridData(show: false),
+                 gridData: const FlGridData(show: false),
                  borderData: FlBorderData(show: false),
                  titlesData: FlTitlesData(
                    leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (v, m) => Text(v.toInt().toString(), style: const TextStyle(color: Colors.white24, fontSize: 10)))),

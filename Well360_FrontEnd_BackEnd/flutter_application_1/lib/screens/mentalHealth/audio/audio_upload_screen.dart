@@ -776,7 +776,7 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.lightbulb_outline, color: Colors.greenAccent, size: 20),
+                      const Icon(Icons.lightbulb_outline, color: Colors.greenAccent, size: 20),
                       const SizedBox(width: 12),
                       Text(
                         'RECOMMENDATIONS',

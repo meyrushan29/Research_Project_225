@@ -360,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.star, color: Colors.cyanAccent, size: 20),
+                                const Icon(Icons.star, color: Colors.cyanAccent, size: 20),
                                 const SizedBox(width: 12),
                                 Text(
                                   'CAPABILITIES',

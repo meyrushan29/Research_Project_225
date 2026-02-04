@@ -28,7 +28,6 @@ class HealthAnalyzerApp extends StatelessWidget {
           primary: Colors.cyanAccent,
           secondary: Colors.purpleAccent,
           surface: Color(0xFF1E1E1E),
-          background: Color(0xFF050505),
         ),
         textTheme: GoogleFonts.exo2TextTheme(ThemeData.dark().textTheme),
         appBarTheme: AppBarTheme(

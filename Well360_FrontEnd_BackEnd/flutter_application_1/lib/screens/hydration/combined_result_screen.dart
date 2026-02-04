@@ -1,5 +1,4 @@
 // lib/screens/hydration/combined_result_screen.dart
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
@@ -26,8 +25,11 @@ class CombinedResultScreen extends StatelessWidget {
     double waterNeed = 0.0;
     if (hasForm && formResult.containsKey('recommended_total_water_liters')) {
       final val = formResult['recommended_total_water_liters'];
-      if (val is num) waterNeed = val.toDouble();
-      else if (val is String) waterNeed = double.tryParse(val) ?? 0.0;
+      if (val is num) {
+        waterNeed = val.toDouble();
+      } else if (val is String) {
+        waterNeed = double.tryParse(val) ?? 0.0;
+      }
     }
     
     // 2. Lip Score (Image)
@@ -37,8 +39,11 @@ class CombinedResultScreen extends StatelessWidget {
     if (hasLip) {
       if (lipResult!.containsKey('hydration_score')) {
          final val = lipResult!['hydration_score'];
-         if (val is num) lipScore = val.toInt();
-         else if (val is String) lipScore = int.tryParse(val) ?? 0;
+         if (val is num) {
+           lipScore = val.toInt();
+         } else if (val is String) {
+           lipScore = int.tryParse(val) ?? 0;
+         }
       }
       lipStatus = lipResult!['prediction']?.toString() ?? "Unknown";
     }
@@ -224,7 +229,7 @@ class CombinedResultScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.warning_amber_rounded, color: Colors.white24, size: 40),
+          const Icon(Icons.warning_amber_rounded, color: Colors.white24, size: 40),
            const SizedBox(height: 10),
           Text(text, style: GoogleFonts.exo2(color: Colors.white24)),
         ],

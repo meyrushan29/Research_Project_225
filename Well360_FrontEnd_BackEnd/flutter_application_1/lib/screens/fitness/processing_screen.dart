@@ -419,10 +419,10 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             ),
           ),
           if (currentStep == index)
-            SizedBox(
+            const SizedBox(
               width: 14,
               height: 14,
-              child: const CircularProgressIndicator(
+              child: CircularProgressIndicator(
                 color: Colors.purpleAccent,
                 strokeWidth: 2,
               ),

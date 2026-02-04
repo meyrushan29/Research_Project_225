@@ -29,8 +29,9 @@ class _FormScreenState extends State<FormScreen> {
 
   void _setTimeSlot() {
     final hour = DateTime.now().hour;
-    if (hour >= 0 && hour < 4) timeSlot = "Midnight-4 AM";
-    else if (hour >= 4 && hour < 8) timeSlot = "4 AM-8 AM";
+    if (hour >= 0 && hour < 4) {
+      timeSlot = "Midnight-4 AM";
+    } else if (hour >= 4 && hour < 8) timeSlot = "4 AM-8 AM";
     else if (hour >= 8 && hour < 12) timeSlot = "8 AM-12 PM";
     else if (hour >= 12 && hour < 16) timeSlot = "12 PM-4 PM";
     else if (hour >= 16 && hour < 20) timeSlot = "4 PM-8 PM";
@@ -138,8 +139,9 @@ class _FormScreenState extends State<FormScreen> {
       }
 
       String riskLevel = "Normal";
-      if (recommended > 2.0) riskLevel = "High Dehydration";
-      else if (recommended > 1.0) riskLevel = "Mild Dehydration";
+      if (recommended > 2.0) {
+        riskLevel = "High Dehydration";
+      } else if (recommended > 1.0) riskLevel = "Mild Dehydration";
       
       final uiResult = {
         "recommended_total_water_liters": recommended,
@@ -567,7 +569,7 @@ class _FormScreenState extends State<FormScreen> {
     IconData icon,
   ) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       dropdownColor: const Color(0xFF1E1E1E),
       style: GoogleFonts.exo2(color: Colors.white),
       decoration: InputDecoration(
