@@ -1,0 +1,596 @@
+2026-01-02 23:01:43,194 - hydration_ml - INFO - ============================================================
+2026-01-02 23:01:43,195 - hydration_ml - INFO - === Starting Advanced Hydration ML Training with Disease Prediction ===
+2026-01-02 23:01:43,195 - hydration_ml - INFO - ============================================================
+2026-01-02 23:01:43,195 - hydration_ml - INFO - 
+Step 1: Loading data...
+2026-01-02 23:01:43,215 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2026-01-02 23:01:43,269 - hydration_ml - INFO - Dataset prepared and saved successfully
+2026-01-02 23:01:43,269 - hydration_ml - INFO - Dataset loaded with 1608 samples
+2026-01-02 23:01:43,272 - hydration_ml - INFO - Hydration Risk Distribution:
+Hydration_Risk_Level
+Very Low    1304
+Medium       238
+Low           64
+High           2
+Name: count, dtype: int64
+2026-01-02 23:01:43,275 - hydration_ml - INFO - Disease Prediction Distribution:
+Existing_Diseases_Predicted
+No known disease                      862
+Diabetes                              382
+Heart-related disease                 172
+Hypertension (High Blood Pressure)    144
+Kidney-related disease                 48
+Name: count, dtype: int64
+2026-01-02 23:01:43,275 - hydration_ml - INFO - 
+Step 2: Initializing trainer...
+2026-01-02 23:01:43,276 - hydration_ml - INFO - 
+Step 3: Starting training pipeline...
+2026-01-02 23:01:43,276 - hydration_ml - INFO - Starting complete training pipeline with disease prediction...
+2026-01-02 23:01:43,277 - hydration_ml - INFO - Starting feature preparation...
+2026-01-02 23:01:43,295 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2026-01-02 23:01:43,296 - hydration_ml - INFO - Number of features: 46
+2026-01-02 23:01:43,315 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2026-01-02 23:01:43,315 - hydration_ml - INFO - Number of features: 46
+2026-01-02 23:01:43,335 - hydration_ml - INFO - Preprocessing 8 numeric and 8 categorical features
+2026-01-02 23:01:43,395 - hydration_ml - INFO - Processed features - Train: (1286, 18), Test: (322, 18)
+2026-01-02 23:01:43,396 - hydration_ml - INFO - 
+=== Training Regression Model ===
+2026-01-02 23:01:43,396 - hydration_ml - INFO - Training regression model...
+2026-01-02 23:01:44,654 - hydration_ml - INFO - Regression training completed in 1.24 seconds
+2026-01-02 23:01:44,655 - hydration_ml - INFO - Regression Metrics - RMSE: 0.008, R²: 0.997
+2026-01-02 23:01:44,655 - hydration_ml - INFO - 
+=== Training Hydration Risk Classifier ===
+2026-01-02 23:01:44,656 - hydration_ml - INFO - Training hydration risk classifier...
+2026-01-02 23:01:47,270 - hydration_ml - INFO - Hydration classifier training completed in 0.46 seconds
+2026-01-02 23:01:47,271 - hydration_ml - INFO - Hydration Classifier Metrics - Accuracy: 0.991, F1: 0.991
+2026-01-02 23:01:47,272 - hydration_ml - INFO - CV Accuracy: 0.988 ± 0.003
+2026-01-02 23:01:47,272 - hydration_ml - INFO - 
+=== Training Disease Prediction Classifier ===
+2026-01-02 23:01:47,274 - hydration_ml - INFO - Training disease prediction classifier...
+2026-01-02 23:01:50,945 - hydration_ml - INFO - Disease classes in test set: [0 1 2 3 4]
+2026-01-02 23:01:50,946 - hydration_ml - INFO - Disease classifier training completed in 0.65 seconds
+2026-01-02 23:01:50,946 - hydration_ml - INFO - Disease Classifier Metrics - Accuracy: 0.978, F1: 0.979
+2026-01-02 23:01:50,947 - hydration_ml - INFO - CV F1 Score: 0.975 ± 0.007
+2026-01-02 23:01:50,947 - hydration_ml - INFO - Saving models and artifacts...
+2026-01-02 23:01:50,993 - hydration_ml - INFO - Model summaries saved
+2026-01-02 23:01:51,053 - hydration_ml - INFO - Feature importance analysis saved for all models
+2026-01-02 23:01:51,054 - hydration_ml - INFO - All models and artifacts saved successfully
+2026-01-02 23:01:51,056 - hydration_ml - INFO - 
+============================================================
+2026-01-02 23:01:51,058 - hydration_ml - INFO - TRAINING SUMMARY
+2026-01-02 23:01:51,059 - hydration_ml - INFO - ============================================================
+2026-01-02 23:01:51,061 - hydration_ml - INFO - 
+Regression Model (Water Recommendation):
+2026-01-02 23:01:51,062 - hydration_ml - INFO -   RMSE: 0.008
+2026-01-02 23:01:51,063 - hydration_ml - INFO -   MAE: 0.003
+2026-01-02 23:01:51,063 - hydration_ml - INFO -   R²: 0.997
+2026-01-02 23:01:51,064 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-02 23:01:51,065 - hydration_ml - INFO -   Accuracy: 0.991
+2026-01-02 23:01:51,067 - hydration_ml - INFO -   F1 Score: 0.991
+2026-01-02 23:01:51,068 - hydration_ml - INFO -   CV Accuracy: 0.988 ± 0.003
+2026-01-02 23:01:51,068 - hydration_ml - INFO - 
+Disease Prediction Classifier:
+2026-01-02 23:01:51,070 - hydration_ml - INFO -   Accuracy: 0.978
+2026-01-02 23:01:51,070 - hydration_ml - INFO -   F1 Score: 0.979
+2026-01-02 23:01:51,071 - hydration_ml - INFO -   CV F1: 0.975 ± 0.007
+2026-01-02 23:01:51,072 - hydration_ml - INFO - 
+Models saved to: models/ directory
+2026-01-02 23:01:51,073 - hydration_ml - INFO - ============================================================
+2026-01-02 23:01:51,074 - hydration_ml - INFO - 
+>>> Training pipeline completed successfully!
+2026-01-02 23:01:51,074 - hydration_ml - INFO - 
+============================================================
+2026-01-02 23:01:51,075 - hydration_ml - INFO - === Training Completed Successfully ===
+2026-01-02 23:01:51,075 - hydration_ml - INFO - ============================================================
+2026-01-02 23:11:44,904 - hydration_ml - INFO - ============================================================
+2026-01-02 23:11:44,905 - hydration_ml - INFO - === Starting Advanced Hydration ML Training with Disease Prediction ===
+2026-01-02 23:11:44,905 - hydration_ml - INFO - ============================================================
+2026-01-02 23:11:44,906 - hydration_ml - INFO - 
+Step 1: Loading data...
+2026-01-02 23:11:44,937 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2026-01-02 23:11:45,006 - hydration_ml - INFO - Dataset prepared and saved successfully
+2026-01-02 23:11:45,008 - hydration_ml - INFO - Dataset loaded with 1608 samples
+2026-01-02 23:11:45,011 - hydration_ml - INFO - Hydration Risk Distribution:
+Hydration_Risk_Level
+Very Low    1304
+Medium       238
+Low           64
+High           2
+Name: count, dtype: int64
+2026-01-02 23:11:45,012 - hydration_ml - INFO - Disease Prediction Distribution:
+Existing_Diseases_Predicted
+No known disease                      862
+Diabetes                              382
+Heart-related disease                 172
+Hypertension (High Blood Pressure)    144
+Kidney-related disease                 48
+Name: count, dtype: int64
+2026-01-02 23:11:45,013 - hydration_ml - INFO - 
+Step 2: Initializing trainer...
+2026-01-02 23:11:45,013 - hydration_ml - INFO - 
+Step 3: Starting training pipeline...
+2026-01-02 23:11:45,013 - hydration_ml - INFO - Starting complete training pipeline with disease prediction...
+2026-01-02 23:11:45,013 - hydration_ml - INFO - Starting feature preparation...
+2026-01-02 23:11:45,039 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2026-01-02 23:11:45,041 - hydration_ml - INFO - Number of features: 46
+2026-01-02 23:11:45,078 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2026-01-02 23:11:45,078 - hydration_ml - INFO - Number of features: 46
+2026-01-02 23:11:45,102 - hydration_ml - INFO - Preprocessing 8 numeric and 8 categorical features
+2026-01-02 23:11:45,175 - hydration_ml - INFO - Processed features - Train: (1286, 18), Test: (322, 18)
+2026-01-02 23:11:45,175 - hydration_ml - INFO - 
+=== Training Regression Model ===
+2026-01-02 23:11:45,176 - hydration_ml - INFO - Training regression model...
+2026-01-02 23:11:46,413 - hydration_ml - INFO - Regression training completed in 1.22 seconds
+2026-01-02 23:11:46,414 - hydration_ml - INFO - Regression Metrics - RMSE: 0.008, R²: 0.997
+2026-01-02 23:11:46,414 - hydration_ml - INFO - 
+=== Training Hydration Risk Classifier ===
+2026-01-02 23:11:46,414 - hydration_ml - INFO - Training hydration risk classifier...
+2026-01-02 23:11:49,005 - hydration_ml - INFO - Hydration classifier training completed in 0.44 seconds
+2026-01-02 23:11:49,005 - hydration_ml - INFO - Hydration Classifier Metrics - Accuracy: 0.991, F1: 0.991
+2026-01-02 23:11:49,008 - hydration_ml - INFO - CV Accuracy: 0.988 ± 0.003
+2026-01-02 23:11:49,008 - hydration_ml - INFO - 
+=== Training Disease Prediction Classifier ===
+2026-01-02 23:11:49,009 - hydration_ml - INFO - Training disease prediction classifier...
+2026-01-02 23:11:52,643 - hydration_ml - INFO - Disease classes in test set: [0 1 2 3 4]
+2026-01-02 23:11:52,643 - hydration_ml - INFO - Disease classifier training completed in 0.63 seconds
+2026-01-02 23:11:52,643 - hydration_ml - INFO - Disease Classifier Metrics - Accuracy: 0.978, F1: 0.979
+2026-01-02 23:11:52,645 - hydration_ml - INFO - CV F1 Score: 0.975 ± 0.007
+2026-01-02 23:11:52,646 - hydration_ml - INFO - Saving models and artifacts...
+2026-01-02 23:11:52,687 - hydration_ml - INFO - Model summaries saved
+2026-01-02 23:11:52,751 - hydration_ml - INFO - Feature importance analysis saved for all models
+2026-01-02 23:11:52,752 - hydration_ml - INFO - All models and artifacts saved successfully
+2026-01-02 23:11:52,754 - hydration_ml - INFO - 
+============================================================
+2026-01-02 23:11:52,754 - hydration_ml - INFO - TRAINING SUMMARY
+2026-01-02 23:11:52,755 - hydration_ml - INFO - ============================================================
+2026-01-02 23:11:52,755 - hydration_ml - INFO - 
+Regression Model (Water Recommendation):
+2026-01-02 23:11:52,756 - hydration_ml - INFO -   RMSE: 0.008
+2026-01-02 23:11:52,756 - hydration_ml - INFO -   MAE: 0.003
+2026-01-02 23:11:52,756 - hydration_ml - INFO -   R²: 0.997
+2026-01-02 23:11:52,757 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-02 23:11:52,758 - hydration_ml - INFO -   Accuracy: 0.991
+2026-01-02 23:11:52,758 - hydration_ml - INFO -   F1 Score: 0.991
+2026-01-02 23:11:52,758 - hydration_ml - INFO -   CV Accuracy: 0.988 ± 0.003
+2026-01-02 23:11:52,758 - hydration_ml - INFO - 
+Disease Prediction Classifier:
+2026-01-02 23:11:52,759 - hydration_ml - INFO -   Accuracy: 0.978
+2026-01-02 23:11:52,759 - hydration_ml - INFO -   F1 Score: 0.979
+2026-01-02 23:11:52,759 - hydration_ml - INFO -   CV F1: 0.975 ± 0.007
+2026-01-02 23:11:52,759 - hydration_ml - INFO - 
+Models saved to: models/ directory
+2026-01-02 23:11:52,760 - hydration_ml - INFO - ============================================================
+2026-01-02 23:11:52,760 - hydration_ml - INFO - 
+>>> Training pipeline completed successfully!
+2026-01-02 23:11:52,761 - hydration_ml - INFO - 
+============================================================
+2026-01-02 23:11:52,761 - hydration_ml - INFO - === Training Completed Successfully ===
+2026-01-02 23:11:52,761 - hydration_ml - INFO - ============================================================
+2026-01-02 23:26:27,277 - hydration_ml - INFO - Loading trained models...
+2026-01-02 23:26:27,908 - hydration_ml - INFO - Models loaded successfully
+2026-01-02 23:26:27,954 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-02 23:26:27,955 - hydration_ml - INFO - Number of features: 35
+2026-01-02 23:27:09,105 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-02 23:27:09,106 - hydration_ml - INFO - Number of features: 35
+2026-01-02 23:27:40,968 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-02 23:27:40,969 - hydration_ml - INFO - Number of features: 35
+2026-01-02 23:28:13,742 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-02 23:28:13,742 - hydration_ml - INFO - Number of features: 35
+2026-01-02 23:43:01,681 - hydration_ml - INFO - Loading trained models...
+2026-01-02 23:43:02,665 - hydration_ml - INFO - Models loaded successfully
+2026-01-02 23:43:02,747 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-02 23:43:02,748 - hydration_ml - INFO - Number of features: 35
+2026-01-06 06:38:27,907 - hydration_ml - INFO - Loading trained models...
+2026-01-06 06:38:28,696 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 06:38:28,765 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-06 06:38:28,766 - hydration_ml - INFO - Number of features: 35
+2026-01-06 06:38:38,777 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-06 06:38:38,777 - hydration_ml - INFO - Number of features: 35
+2026-01-06 06:38:48,340 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 35)
+2026-01-06 06:38:48,340 - hydration_ml - INFO - Number of features: 35
+2026-01-06 06:44:39,244 - hydration_ml - INFO - Loading trained models...
+2026-01-06 06:44:39,809 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 06:44:39,882 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 06:44:39,882 - hydration_ml - INFO - Number of features: 37
+2026-01-06 06:47:04,689 - hydration_ml - INFO - Loading trained models...
+2026-01-06 06:47:05,497 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 06:47:05,616 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 06:47:05,617 - hydration_ml - INFO - Number of features: 37
+2026-01-06 06:52:23,210 - hydration_ml - INFO - Loading trained models...
+2026-01-06 06:52:23,600 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 06:52:23,621 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 06:52:23,621 - hydration_ml - INFO - Number of features: 37
+2026-01-06 07:55:10,373 - hydration_ml - INFO - Loading trained models...
+2026-01-06 07:55:11,354 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 08:02:54,149 - hydration_ml - INFO - Loading trained models...
+2026-01-06 08:02:54,748 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 08:06:15,817 - hydration_ml - INFO - Loading trained models...
+2026-01-06 08:06:16,287 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 08:20:31,480 - hydration_ml - INFO - Loading trained models...
+2026-01-06 08:20:32,328 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 08:20:32,439 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 08:20:32,441 - hydration_ml - INFO - Number of features: 37
+2026-01-06 08:21:50,612 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 08:21:50,614 - hydration_ml - INFO - Number of features: 37
+2026-01-06 08:59:52,259 - hydration_ml - INFO - Loading trained models...
+2026-01-06 08:59:53,178 - hydration_ml - INFO - Models loaded successfully
+2026-01-06 08:59:53,307 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 08:59:53,322 - hydration_ml - INFO - Number of features: 37
+2026-01-06 09:01:52,740 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-06 09:01:52,742 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:45:47,515 - hydration_ml - INFO - Loading trained models...
+2026-01-07 02:45:49,373 - hydration_ml - INFO - Models loaded successfully
+2026-01-07 02:45:49,591 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:45:49,591 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:48:17,914 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:48:17,914 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:48:29,275 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:48:29,276 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:49:21,100 - hydration_ml - INFO - ============================================================
+2026-01-07 02:49:21,101 - hydration_ml - INFO - === Starting Advanced Hydration ML Training with Disease Prediction ===
+2026-01-07 02:49:21,101 - hydration_ml - INFO - ============================================================
+2026-01-07 02:49:21,101 - hydration_ml - INFO - 
+Step 1: Loading data...
+2026-01-07 02:49:21,127 - hydration_ml - INFO - Data cleaned. New shape: (1608, 22)
+2026-01-07 02:49:21,189 - hydration_ml - INFO - Dataset prepared and saved successfully
+2026-01-07 02:49:21,189 - hydration_ml - INFO - Dataset loaded with 1608 samples
+2026-01-07 02:49:21,193 - hydration_ml - INFO - Hydration Risk Distribution:
+Hydration_Risk_Level
+Very Low    1304
+Medium       238
+Low           64
+High           2
+Name: count, dtype: int64
+2026-01-07 02:49:21,194 - hydration_ml - INFO - Disease Prediction Distribution:
+Existing_Diseases_Predicted
+No known disease                      862
+Diabetes                              382
+Heart-related disease                 172
+Hypertension (High Blood Pressure)    144
+Kidney-related disease                 48
+Name: count, dtype: int64
+2026-01-07 02:49:21,194 - hydration_ml - INFO - 
+Step 2: Initializing trainer...
+2026-01-07 02:49:21,194 - hydration_ml - INFO - 
+Step 3: Starting training pipeline...
+2026-01-07 02:49:21,195 - hydration_ml - INFO - Starting complete training pipeline with disease prediction...
+2026-01-07 02:49:21,195 - hydration_ml - INFO - Starting feature preparation...
+2026-01-07 02:49:21,213 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2026-01-07 02:49:21,214 - hydration_ml - INFO - Number of features: 46
+2026-01-07 02:49:21,231 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1608, 46)
+2026-01-07 02:49:21,231 - hydration_ml - INFO - Number of features: 46
+2026-01-07 02:49:21,252 - hydration_ml - INFO - Preprocessing 8 numeric and 8 categorical features
+2026-01-07 02:49:21,310 - hydration_ml - INFO - Processed features - Train: (1286, 18), Test: (322, 18)
+2026-01-07 02:49:21,310 - hydration_ml - INFO - 
+=== Training Regression Model ===
+2026-01-07 02:49:21,311 - hydration_ml - INFO - Training regression model...
+2026-01-07 02:49:22,025 - hydration_ml - INFO - Regression training completed in 0.68 seconds
+2026-01-07 02:49:22,025 - hydration_ml - INFO - Regression Metrics - RMSE: 0.008, R²: 0.997
+2026-01-07 02:49:22,025 - hydration_ml - INFO - 
+=== Training Hydration Risk Classifier ===
+2026-01-07 02:49:22,025 - hydration_ml - INFO - Training hydration risk classifier...
+2026-01-07 02:49:24,436 - hydration_ml - INFO - Hydration classifier training completed in 0.41 seconds
+2026-01-07 02:49:24,436 - hydration_ml - INFO - Hydration Classifier Metrics - Accuracy: 0.991, F1: 0.991
+2026-01-07 02:49:24,437 - hydration_ml - INFO - CV Accuracy: 0.988 ± 0.003
+2026-01-07 02:49:24,437 - hydration_ml - INFO - 
+=== Training Disease Prediction Classifier ===
+2026-01-07 02:49:24,437 - hydration_ml - INFO - Training disease prediction classifier...
+2026-01-07 02:49:27,859 - hydration_ml - INFO - Disease classes in test set: [0 1 2 3 4]
+2026-01-07 02:49:27,860 - hydration_ml - INFO - Disease classifier training completed in 0.58 seconds
+2026-01-07 02:49:27,860 - hydration_ml - INFO - Disease Classifier Metrics - Accuracy: 0.978, F1: 0.979
+2026-01-07 02:49:27,860 - hydration_ml - INFO - CV F1 Score: 0.975 ± 0.007
+2026-01-07 02:49:27,860 - hydration_ml - INFO - Saving models and artifacts...
+2026-01-07 02:49:27,912 - hydration_ml - INFO - Model summaries saved
+2026-01-07 02:49:28,013 - hydration_ml - INFO - Feature importance analysis saved for all models
+2026-01-07 02:49:28,013 - hydration_ml - INFO - All models and artifacts saved successfully
+2026-01-07 02:49:28,013 - hydration_ml - INFO - 
+============================================================
+2026-01-07 02:49:28,014 - hydration_ml - INFO - TRAINING SUMMARY
+2026-01-07 02:49:28,014 - hydration_ml - INFO - ============================================================
+2026-01-07 02:49:28,014 - hydration_ml - INFO - 
+Regression Model (Water Recommendation):
+2026-01-07 02:49:28,014 - hydration_ml - INFO -   RMSE: 0.008
+2026-01-07 02:49:28,014 - hydration_ml - INFO -   MAE: 0.003
+2026-01-07 02:49:28,014 - hydration_ml - INFO -   R²: 0.997
+2026-01-07 02:49:28,015 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-07 02:49:28,015 - hydration_ml - INFO -   Accuracy: 0.991
+2026-01-07 02:49:28,015 - hydration_ml - INFO -   F1 Score: 0.991
+2026-01-07 02:49:28,015 - hydration_ml - INFO -   CV Accuracy: 0.988 ± 0.003
+2026-01-07 02:49:28,016 - hydration_ml - INFO - 
+Disease Prediction Classifier:
+2026-01-07 02:49:28,017 - hydration_ml - INFO -   Accuracy: 0.978
+2026-01-07 02:49:28,017 - hydration_ml - INFO -   F1 Score: 0.979
+2026-01-07 02:49:28,017 - hydration_ml - INFO -   CV F1: 0.975 ± 0.007
+2026-01-07 02:49:28,017 - hydration_ml - INFO - 
+Models saved to: models/ directory
+2026-01-07 02:49:28,017 - hydration_ml - INFO - ============================================================
+2026-01-07 02:49:28,017 - hydration_ml - INFO - 
+>>> Training pipeline completed successfully!
+2026-01-07 02:49:28,017 - hydration_ml - INFO - 
+============================================================
+2026-01-07 02:49:28,017 - hydration_ml - INFO - === Training Completed Successfully ===
+2026-01-07 02:49:28,018 - hydration_ml - INFO - ============================================================
+2026-01-07 02:50:23,753 - hydration_ml - INFO - Loading trained models...
+2026-01-07 02:50:24,355 - hydration_ml - INFO - Models loaded successfully
+2026-01-07 02:50:24,414 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:50:24,416 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:50:51,785 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:50:51,786 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:51:08,730 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:51:08,731 - hydration_ml - INFO - Number of features: 37
+2026-01-07 02:57:04,985 - hydration_ml - INFO - Loading trained models...
+2026-01-07 02:57:05,777 - hydration_ml - INFO - Models loaded successfully
+2026-01-07 02:57:05,881 - hydration_ml - INFO - Applied advanced feature engineering. New shape: (1, 37)
+2026-01-07 02:57:05,881 - hydration_ml - INFO - Number of features: 37
+2026-01-07 03:14:56,472 - hydration_ml - INFO - ============================================================
+2026-01-07 03:14:56,472 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-07 03:14:56,473 - hydration_ml - INFO - ============================================================
+2026-01-07 03:14:56,522 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-07 03:14:56,591 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-07 03:14:56,592 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-07 03:14:56,592 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-07 03:14:56,592 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-07 03:14:56,598 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-07 03:14:56,599 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-07 03:14:56,623 - hydration_ml - INFO - Processed features | Train: (1286, 19), Test: (322, 19)
+2026-01-07 03:14:56,624 - hydration_ml - INFO - Training RandomForest Regressor (Next 4h Water)...
+2026-01-07 03:14:58,428 - hydration_ml - INFO - Regressor trained in 1.79s | RMSE=0.020, R²=0.989
+2026-01-07 03:14:58,429 - hydration_ml - INFO - Training Hydration Risk Classifier...
+2026-01-07 03:15:01,946 - hydration_ml - INFO - Classifier trained in 0.64s | Accuracy=0.981, F1=0.981
+2026-01-07 03:15:01,946 - hydration_ml - INFO - Saving models and preprocessing artifacts...
+2026-01-07 03:15:01,970 - hydration_ml - INFO - Models and artifacts saved successfully
+2026-01-07 03:15:01,970 - hydration_ml - INFO - 
+============================================================
+2026-01-07 03:15:01,970 - hydration_ml - INFO - FINAL TRAINING SUMMARY
+2026-01-07 03:15:01,970 - hydration_ml - INFO - ============================================================
+2026-01-07 03:15:01,970 - hydration_ml - INFO - Water Requirement Regressor:
+2026-01-07 03:15:01,971 - hydration_ml - INFO -   RMSE: 0.020
+2026-01-07 03:15:01,971 - hydration_ml - INFO -   MAE : 0.007
+2026-01-07 03:15:01,971 - hydration_ml - INFO -   R²  : 0.989
+2026-01-07 03:15:01,971 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-07 03:15:01,971 - hydration_ml - INFO -   Accuracy: 0.981
+2026-01-07 03:15:01,971 - hydration_ml - INFO -   F1 Score: 0.981
+2026-01-07 03:15:01,971 - hydration_ml - INFO -   CV Accuracy: 0.966 ± 0.006
+2026-01-07 03:15:01,972 - hydration_ml - INFO - ============================================================
+2026-01-07 03:15:01,972 - hydration_ml - INFO - TRAINING COMPLETED SUCCESSFULLY
+2026-01-07 03:28:01,194 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 03:33:25,481 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 03:33:26,021 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:33:37,010 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:35:06,405 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 03:35:07,283 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:35:15,605 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:37:57,622 - hydration_ml - INFO - ============================================================
+2026-01-07 03:37:57,622 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-07 03:37:57,622 - hydration_ml - INFO - ============================================================
+2026-01-07 03:37:57,652 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-07 03:37:57,722 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-07 03:37:57,722 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-07 03:37:57,722 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-07 03:37:57,722 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-07 03:37:57,729 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-07 03:37:57,731 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-07 03:37:57,750 - hydration_ml - INFO - Processed features | Train: (1286, 19), Test: (322, 19)
+2026-01-07 03:37:57,750 - hydration_ml - INFO - Training RandomForest Regressor (Next 4h Water)...
+2026-01-07 03:37:59,480 - hydration_ml - INFO - Regressor trained in 1.71s | RMSE=0.020, R²=0.989
+2026-01-07 03:37:59,480 - hydration_ml - INFO - Training Hydration Risk Classifier...
+2026-01-07 03:38:02,744 - hydration_ml - INFO - Classifier trained in 0.58s | Accuracy=0.981, F1=0.981
+2026-01-07 03:38:02,744 - hydration_ml - INFO - Saving models and preprocessing artifacts...
+2026-01-07 03:38:02,772 - hydration_ml - INFO - Models and artifacts saved successfully
+2026-01-07 03:38:02,772 - hydration_ml - INFO - 
+============================================================
+2026-01-07 03:38:02,772 - hydration_ml - INFO - FINAL TRAINING SUMMARY
+2026-01-07 03:38:02,772 - hydration_ml - INFO - ============================================================
+2026-01-07 03:38:02,772 - hydration_ml - INFO - Water Requirement Regressor:
+2026-01-07 03:38:02,772 - hydration_ml - INFO -   RMSE: 0.020
+2026-01-07 03:38:02,773 - hydration_ml - INFO -   MAE : 0.007
+2026-01-07 03:38:02,773 - hydration_ml - INFO -   R²  : 0.989
+2026-01-07 03:38:02,773 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-07 03:38:02,773 - hydration_ml - INFO -   Accuracy: 0.981
+2026-01-07 03:38:02,773 - hydration_ml - INFO -   F1 Score: 0.981
+2026-01-07 03:38:02,773 - hydration_ml - INFO -   CV Accuracy: 0.966 ± 0.006
+2026-01-07 03:38:02,773 - hydration_ml - INFO - ============================================================
+2026-01-07 03:38:02,773 - hydration_ml - INFO - TRAINING COMPLETED SUCCESSFULLY
+2026-01-07 03:38:56,698 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 03:38:57,311 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:40:43,912 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 03:40:44,463 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:40:51,973 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:44:27,466 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:48:09,986 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:48:42,268 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:52:12,285 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:54:13,767 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:54:55,134 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:55:23,813 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:55:44,617 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:55:57,961 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:56:09,088 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:56:30,010 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:56:41,935 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 03:57:07,172 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:02:51,933 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:03:48,270 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:04:04,254 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:04:28,950 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:04:41,375 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:10:19,306 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:10:41,303 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:11:12,648 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:16:51,302 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 04:16:52,004 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:19:27,527 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:30:37,442 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 04:30:38,134 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 04:45:05,350 - hydration_ml - INFO - ============================================================
+2026-01-07 04:45:05,351 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-07 04:45:05,351 - hydration_ml - INFO - ============================================================
+2026-01-07 04:45:05,429 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-07 04:45:05,507 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-07 04:45:05,507 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-07 04:45:05,508 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-07 04:45:05,508 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-07 04:45:05,514 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-07 04:45:05,516 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-07 04:45:05,541 - hydration_ml - INFO - Processed features | Train: (1286, 19), Test: (322, 19)
+2026-01-07 04:45:05,541 - hydration_ml - INFO - Training RandomForest Regressor (Next 4h Water)...
+2026-01-07 04:45:07,711 - hydration_ml - INFO - Regressor trained in 2.15s | RMSE=0.020, R²=0.989
+2026-01-07 04:45:07,711 - hydration_ml - INFO - Training Hydration Risk Classifier...
+2026-01-07 04:45:11,113 - hydration_ml - INFO - Classifier trained in 0.59s | Accuracy=0.981, F1=0.981
+2026-01-07 04:45:11,113 - hydration_ml - INFO - Saving models and preprocessing artifacts...
+2026-01-07 04:45:11,142 - hydration_ml - INFO - Models and artifacts saved successfully
+2026-01-07 04:45:11,142 - hydration_ml - INFO - 
+============================================================
+2026-01-07 04:45:11,142 - hydration_ml - INFO - FINAL TRAINING SUMMARY
+2026-01-07 04:45:11,142 - hydration_ml - INFO - ============================================================
+2026-01-07 04:45:11,142 - hydration_ml - INFO - Water Requirement Regressor:
+2026-01-07 04:45:11,143 - hydration_ml - INFO -   RMSE: 0.020
+2026-01-07 04:45:11,143 - hydration_ml - INFO -   MAE : 0.007
+2026-01-07 04:45:11,144 - hydration_ml - INFO -   R²  : 0.989
+2026-01-07 04:45:11,144 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-07 04:45:11,144 - hydration_ml - INFO -   Accuracy: 0.981
+2026-01-07 04:45:11,144 - hydration_ml - INFO -   F1 Score: 0.981
+2026-01-07 04:45:11,144 - hydration_ml - INFO -   CV Accuracy: 0.966 ± 0.006
+2026-01-07 04:45:11,144 - hydration_ml - INFO - ============================================================
+2026-01-07 04:45:11,144 - hydration_ml - INFO - TRAINING COMPLETED SUCCESSFULLY
+2026-01-07 05:44:04,873 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 05:44:06,122 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 05:44:44,993 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 05:45:10,559 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:01:09,551 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 06:01:10,562 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:01:24,222 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:02:21,328 - hydration_ml - INFO - ============================================================
+2026-01-07 06:02:21,328 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-07 06:02:21,328 - hydration_ml - INFO - ============================================================
+2026-01-07 06:02:21,357 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-07 06:02:21,422 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-07 06:02:21,422 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-07 06:02:21,423 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-07 06:02:21,423 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-07 06:02:21,429 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-07 06:02:21,431 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-07 06:03:00,036 - hydration_ml - INFO - ============================================================
+2026-01-07 06:03:00,037 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-07 06:03:00,037 - hydration_ml - INFO - ============================================================
+2026-01-07 06:03:00,071 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-07 06:03:00,144 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-07 06:03:00,144 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-07 06:03:00,144 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-07 06:03:00,144 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-07 06:03:00,152 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-07 06:03:00,154 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-07 06:03:00,181 - hydration_ml - INFO - Processed features | Train: (1286, 19), Test: (322, 19)
+2026-01-07 06:03:00,182 - hydration_ml - INFO - Training RandomForest Regressor (Next 4h Water)...
+2026-01-07 06:03:01,097 - hydration_ml - INFO - Regressor trained in 0.89s | RMSE=0.020, R²=0.989
+2026-01-07 06:03:01,097 - hydration_ml - INFO - Training Hydration Risk Classifier...
+2026-01-07 06:03:03,854 - hydration_ml - INFO - Classifier trained in 0.46s | Accuracy=0.981, F1=0.981
+2026-01-07 06:03:03,854 - hydration_ml - INFO - Saving models and preprocessing artifacts...
+2026-01-07 06:03:03,884 - hydration_ml - INFO - Models and artifacts saved successfully
+2026-01-07 06:03:03,884 - hydration_ml - INFO - 
+============================================================
+2026-01-07 06:03:03,884 - hydration_ml - INFO - FINAL TRAINING SUMMARY
+2026-01-07 06:03:03,884 - hydration_ml - INFO - ============================================================
+2026-01-07 06:03:03,884 - hydration_ml - INFO - Water Requirement Regressor:
+2026-01-07 06:03:03,885 - hydration_ml - INFO -   RMSE: 0.020
+2026-01-07 06:03:03,885 - hydration_ml - INFO -   MAE : 0.007
+2026-01-07 06:03:03,885 - hydration_ml - INFO -   R²  : 0.989
+2026-01-07 06:03:03,885 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-07 06:03:03,885 - hydration_ml - INFO -   Accuracy: 0.981
+2026-01-07 06:03:03,886 - hydration_ml - INFO -   F1 Score: 0.981
+2026-01-07 06:03:03,886 - hydration_ml - INFO -   CV Accuracy: 0.966 ± 0.006
+2026-01-07 06:03:03,886 - hydration_ml - INFO - ============================================================
+2026-01-07 06:03:03,886 - hydration_ml - INFO - TRAINING COMPLETED SUCCESSFULLY
+2026-01-07 06:03:36,041 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 06:03:36,597 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:04:34,443 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:07:11,984 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:15:16,295 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 06:15:17,155 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 06:15:39,870 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 08:43:45,198 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-07 08:43:46,206 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 08:46:22,317 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 08:50:22,616 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-07 08:52:48,812 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 07:06:18,686 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-08 07:06:20,544 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 07:07:52,260 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 07:10:12,286 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 07:27:45,126 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 09:22:18,746 - hydration_ml - INFO - ============================================================
+2026-01-08 09:22:18,747 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-08 09:22:18,747 - hydration_ml - INFO - ============================================================
+2026-01-08 09:22:18,793 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-08 09:22:18,860 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-08 09:22:18,860 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-08 09:22:18,862 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-08 09:22:18,862 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-08 09:22:18,868 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-08 09:22:18,869 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-08 09:22:18,894 - hydration_ml - INFO - Processed features | Train: (1286, 19), Test: (322, 19)
+2026-01-08 09:22:18,895 - hydration_ml - INFO - Training RandomForest Regressor (Next 4h Water)...
+2026-01-08 09:22:20,718 - hydration_ml - INFO - Regressor trained in 1.80s | RMSE=0.020, R²=0.989
+2026-01-08 09:22:20,719 - hydration_ml - INFO - Training Hydration Risk Classifier...
+2026-01-08 09:22:24,042 - hydration_ml - INFO - Classifier trained in 0.58s | Accuracy=0.981, F1=0.981
+2026-01-08 09:22:24,043 - hydration_ml - INFO - Saving models and preprocessing artifacts...
+2026-01-08 09:22:24,067 - hydration_ml - INFO - Models and artifacts saved successfully
+2026-01-08 09:22:24,067 - hydration_ml - INFO - 
+============================================================
+2026-01-08 09:22:24,068 - hydration_ml - INFO - FINAL TRAINING SUMMARY
+2026-01-08 09:22:24,068 - hydration_ml - INFO - ============================================================
+2026-01-08 09:22:24,068 - hydration_ml - INFO - Water Requirement Regressor:
+2026-01-08 09:22:24,069 - hydration_ml - INFO -   RMSE: 0.020
+2026-01-08 09:22:24,069 - hydration_ml - INFO -   MAE : 0.007
+2026-01-08 09:22:24,069 - hydration_ml - INFO -   R²  : 0.989
+2026-01-08 09:22:24,070 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-08 09:22:24,070 - hydration_ml - INFO -   Accuracy: 0.981
+2026-01-08 09:22:24,070 - hydration_ml - INFO -   F1 Score: 0.981
+2026-01-08 09:22:24,070 - hydration_ml - INFO -   CV Accuracy: 0.966 ± 0.006
+2026-01-08 09:22:24,071 - hydration_ml - INFO - ============================================================
+2026-01-08 09:22:24,071 - hydration_ml - INFO - TRAINING COMPLETED SUCCESSFULLY
+2026-01-08 09:29:58,133 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-08 09:29:59,055 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 09:30:22,689 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-01-08 09:31:25,208 - hydration_ml - INFO - ============================================================
+2026-01-08 09:31:25,208 - hydration_ml - INFO - HYDRATION ML TRAINING PIPELINE (TIME-WINDOW AWARE)
+2026-01-08 09:31:25,209 - hydration_ml - INFO - ============================================================
+2026-01-08 09:31:25,238 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-01-08 09:31:25,304 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-01-08 09:31:25,304 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-01-08 09:31:25,304 - hydration_ml - INFO - Starting full training pipeline...
+2026-01-08 09:31:25,304 - hydration_ml - INFO - Preparing features (engineering + preprocessing)...
+2026-01-08 09:31:25,310 - hydration_ml - INFO - Train X: (1286, 24), Test X: (322, 24)
+2026-01-08 09:31:25,310 - hydration_ml - INFO - Preprocessor using 9 numeric and 8 categorical features
+2026-01-08 09:31:25,344 - hydration_ml - INFO - Processed features | Train: (1286, 19), Test: (322, 19)
+2026-01-08 09:31:25,345 - hydration_ml - INFO - Training RandomForest Regressor (Next 4h Water)...
+2026-01-08 09:31:26,288 - hydration_ml - INFO - Regressor trained in 0.92s | RMSE=0.020, R²=0.989
+2026-01-08 09:31:26,288 - hydration_ml - INFO - Training Hydration Risk Classifier...
+2026-01-08 09:31:29,084 - hydration_ml - INFO - Classifier trained in 0.47s | Accuracy=0.981, F1=0.981
+2026-01-08 09:31:29,085 - hydration_ml - INFO - Saving models and preprocessing artifacts...
+2026-01-08 09:31:29,112 - hydration_ml - INFO - Models and artifacts saved successfully
+2026-01-08 09:31:29,112 - hydration_ml - INFO - 
+============================================================
+2026-01-08 09:31:29,112 - hydration_ml - INFO - FINAL TRAINING SUMMARY
+2026-01-08 09:31:29,112 - hydration_ml - INFO - ============================================================
+2026-01-08 09:31:29,113 - hydration_ml - INFO - Water Requirement Regressor:
+2026-01-08 09:31:29,113 - hydration_ml - INFO -   RMSE: 0.020
+2026-01-08 09:31:29,113 - hydration_ml - INFO -   MAE : 0.007
+2026-01-08 09:31:29,113 - hydration_ml - INFO -   R²  : 0.989
+2026-01-08 09:31:29,114 - hydration_ml - INFO - 
+Hydration Risk Classifier:
+2026-01-08 09:31:29,114 - hydration_ml - INFO -   Accuracy: 0.981
+2026-01-08 09:31:29,114 - hydration_ml - INFO -   F1 Score: 0.981
+2026-01-08 09:31:29,114 - hydration_ml - INFO -   CV Accuracy: 0.966 ± 0.006
+2026-01-08 09:31:29,114 - hydration_ml - INFO - ============================================================
+2026-01-08 09:31:29,114 - hydration_ml - INFO - TRAINING COMPLETED SUCCESSFULLY
+2026-01-08 09:35:30,464 - hydration_ml - INFO - Loading trained hydration models...
+2026-01-08 09:35:31,133 - hydration_ml - INFO - Feature engineering completed | Features: 31
