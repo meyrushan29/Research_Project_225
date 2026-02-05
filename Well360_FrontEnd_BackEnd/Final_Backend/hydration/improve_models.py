@@ -37,7 +37,8 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, f1_sco
 # Import existing modules
 from core.config import (
     RANDOM_STATE, MODEL_DIR, DEVICE,
-    RF_REGRESSOR_PARAMS, RF_CLASSIFIER_PARAMS
+    MODEL_REG_PATH, MODEL_CLF_PATH, PREPROCESSOR_PATH, ENCODER_PATH,
+    XGB_REGRESSOR_PARAMS, XGB_CLASSIFIER_PARAMS
 )
 from core.utils import setup_logging, save_pickle, Timer
 from hydration.dataLoad import load_data
@@ -87,39 +88,28 @@ class ImprovedHydrationTrainer:
                 X_train_clf_balanced, y_clf_train_balanced, y_clf_test)
     
     def train_improved_regressor(self, X_train, y_train, X_test, y_test):
-        """Train regressor with hyperparameter tuning and multiple models"""
-        LOG.info("Training IMPROVED Regressor...")
+        """Train regressor with hyperparameter tuning"""
+        LOG.info("Training IMPROVED Regressor (XGBoost)...")
         
         if self.use_grid_search:
-            # Hyperparameter tuning
             param_grid = {
-                'n_estimators': [100, 200, 300],
-                'max_depth': [10, 20, 30, None],
-                'min_samples_split': [2, 5, 10],
-                'min_samples_leaf': [1, 2, 4]
+                'n_estimators': [100, 300, 500],
+                'max_depth': [6, 10, 15],
+                'learning_rate': [0.01, 0.05, 0.1],
+                'subsample': [0.8, 1.0]
             }
             
             grid = GridSearchCV(
-                RandomForestRegressor(random_state=RANDOM_STATE),
+                XGBRegressor(random_state=RANDOM_STATE, n_jobs=-1),
                 param_grid, cv=5, scoring='r2', n_jobs=-1, verbose=1
             )
             grid.fit(X_train, y_train)
             model = grid.best_estimator_
             LOG.info(f"Best params: {grid.best_params_}")
         else:
-            # Use XGBoost (usually better than RandomForest)
-            model = XGBRegressor(
-                n_estimators=300,
-                max_depth=10,
-                learning_rate=0.05,
-                subsample=0.8,
-                colsample_bytree=0.8,
-                random_state=RANDOM_STATE,
-                n_jobs=-1
-            )
+            model = XGBRegressor(**XGB_REGRESSOR_PARAMS)
             model.fit(X_train, y_train)
         
-        # Evaluate
         preds = model.predict(X_test)
         rmse = np.sqrt(mean_squared_error(y_test, preds))
         r2 = r2_score(y_test, preds)
@@ -135,34 +125,24 @@ class ImprovedHydrationTrainer:
     
     def train_improved_classifier(self, X_train, y_train, X_test, y_test):
         """Train classifier with hyperparameter tuning"""
-        LOG.info("Training IMPROVED Classifier...")
+        LOG.info("Training IMPROVED Classifier (XGBoost)...")
         
         if self.use_grid_search:
             param_grid = {
-                'n_estimators': [100, 200, 300],
-                'max_depth': [10, 20, 30],
-                'min_samples_split': [2, 5]
+                'n_estimators': [100, 300, 500],
+                'max_depth': [6, 10, 15],
+                'learning_rate': [0.01, 0.05, 0.1]
             }
             
             grid = GridSearchCV(
-                RandomForestClassifier(random_state=RANDOM_STATE),
+                XGBClassifier(random_state=RANDOM_STATE, n_jobs=-1, eval_metric='mlogloss'),
                 param_grid, cv=5, scoring='f1_weighted', n_jobs=-1, verbose=1
             )
             grid.fit(X_train, y_train)
             model = grid.best_estimator_
             LOG.info(f"Best params: {grid.best_params_}")
         else:
-            # Use XGBoost
-            model = XGBClassifier(
-                n_estimators=300,
-                max_depth=8,
-                learning_rate=0.05,
-                subsample=0.8,
-                colsample_bytree=0.8,
-                random_state=RANDOM_STATE,
-                n_jobs=-1,
-                eval_metric='mlogloss'
-            )
+            model = XGBClassifier(**XGB_CLASSIFIER_PARAMS)
             model.fit(X_train, y_train)
         
         # Evaluate
@@ -206,10 +186,10 @@ class ImprovedHydrationTrainer:
         LOG.info("Saving improved models...")
         MODEL_DIR.mkdir(exist_ok=True)
         
-        save_pickle(self.best_regressor, MODEL_DIR / "hydration_regressor.pkl")
-        save_pickle(self.best_classifier, MODEL_DIR / "hydration_classifier.pkl")
-        save_pickle(self.preprocessor, MODEL_DIR / "preprocessor.pkl")
-        save_pickle(self.label_encoder, MODEL_DIR / "hydration_label_encoder.pkl")
+        save_pickle(self.best_regressor, MODEL_REG_PATH)
+        save_pickle(self.best_classifier, MODEL_CLF_PATH)
+        save_pickle(self.preprocessor, PREPROCESSOR_PATH)
+        save_pickle(self.label_encoder, ENCODER_PATH)
         
         with open(MODEL_DIR / "improved_training_metrics.json", "w") as f:
             json.dump(self.metrics, f, indent=2)
@@ -234,26 +214,30 @@ class ImprovedHydrationTrainer:
 # MAIN EXECUTION
 # ============================================================
 def main():
-    print("\n" + "=" * 60)
-    print("MODEL IMPROVEMENT SCRIPT")
-    print("=" * 60)
-    print("\nSelect improvement type:")
-    print("1. Quick Improvement (XGBoost - Faster)")
-    print("2. Grid Search Tuning (Slower but thorough)")
+    LOG.info("=" * 60)
+    LOG.info("MODEL IMPROVEMENT PIPELINE - TABULAR DATA")
+    LOG.info("=" * 60)
     
-    choice = input("\nYour choice (1 or 2, default 1): ").strip()
-    use_grid_search = (choice == "2")
+    # Use Grid Search for best results if dataset is small enough, 
+    # otherwise high-quality XGBoost is usually sufficient.
+    # For this project, we'll try to get the absolute best results.
+    use_grid_search = True 
     
     # Load data
-    df = load_data()
-    LOG.info(f"Dataset loaded: {len(df)} samples")
+    try:
+        df = load_data()
+        LOG.info(f"Dataset loaded: {len(df)} samples")
+    except Exception as e:
+        LOG.error(f"Failed to load data: {e}")
+        return
     
     # Train improved models
     trainer = ImprovedHydrationTrainer(use_grid_search=use_grid_search)
     trainer.train_all(df)
     
-    print("\n✅ IMPROVEMENT COMPLETE!")
-    print("New models saved to 'hydration/models/' directory")
+    LOG.info("=" * 60)
+    LOG.info("TABULAR MODEL IMPROVEMENT COMPLETE")
+    LOG.info("=" * 60)
 
 
 if __name__ == "__main__":

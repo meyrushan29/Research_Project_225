@@ -62,7 +62,7 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
 
       _controller = CameraController(
         camera,
-        ResolutionPreset.medium,
+        ResolutionPreset.veryHigh,
         enableAudio: false,
       );
 

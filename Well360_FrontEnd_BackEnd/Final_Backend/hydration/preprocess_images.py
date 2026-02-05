@@ -15,15 +15,12 @@ def get_transforms(train: bool = True):
         return transforms.Compose([
             transforms.Resize((IMG_SIZE, IMG_SIZE)),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.RandomRotation(20), # Increased rotation
-            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Shift position
+            transforms.RandomRotation(10),
             transforms.ColorJitter(
-                brightness=0.2, # Stronger lighting variance
-                contrast=0.2,
-                saturation=0.2,
-                hue=0.05
+                brightness=0.1,
+                contrast=0.1,
+                saturation=0.1
             ),
-            transforms.RandomGrayscale(p=0.1), # Lighting invariance
             transforms.ToTensor(),
             transforms.Normalize(
                 mean=[0.485, 0.456, 0.406],
@@ -39,14 +36,3 @@ def get_transforms(train: bool = True):
                 std=[0.229, 0.224, 0.225]
             )
         ])
-
-
-# ======================================================
-# TEST
-# ======================================================
-if __name__ == "__main__":
-    t_train = get_transforms(train=True)
-    t_test = get_transforms(train=False)
-
-    print("Training transforms:", t_train)
-    print("Testing transforms :", t_test)

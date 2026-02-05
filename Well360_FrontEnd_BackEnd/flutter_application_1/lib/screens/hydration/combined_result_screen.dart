@@ -45,7 +45,10 @@ class CombinedResultScreen extends StatelessWidget {
            lipScore = int.tryParse(val) ?? 0;
          }
       }
-      lipStatus = lipResult!['prediction']?.toString() ?? "Unknown";
+      lipStatus = lipResult!['prediction']?.toString() ?? 
+                  lipResult!['status']?.toString() ?? 
+                  lipResult!['hydration_risk_level']?.toString() ??
+                  "Unknown";
     }
 
     return Scaffold(

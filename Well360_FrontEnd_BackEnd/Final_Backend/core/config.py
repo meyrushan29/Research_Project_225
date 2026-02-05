@@ -21,8 +21,8 @@ DATA_DIR.mkdir(exist_ok=True)
 # MODEL SAVE PATHS (TABULAR ML)
 # ======================================================
 # -------- Random Forest --------
-MODEL_REG_PATH = MODEL_DIR / "hydration_regressor.pkl"
-MODEL_CLF_PATH = MODEL_DIR / "hydration_classifier.pkl"
+MODEL_REG_PATH = MODEL_DIR / "xgb_regressor.pkl"
+MODEL_CLF_PATH = MODEL_DIR / "xgb_classifier.pkl"
 
 # -------- XGBoost --------
 MODEL_XGB_REG_PATH = MODEL_DIR / "xgb_regressor.pkl"

@@ -1,4 +1,3 @@
-// lib/screens/hydration/camera_screen.dart
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
@@ -18,6 +17,7 @@ class _CameraScreenState extends State<CameraScreen> {
   List<CameraDescription> _cameras = [];
   bool _isInit = false;
   String? _error;
+  CameraDescription? _selectedCamera;
 
   @override
   void initState() {
@@ -33,20 +33,14 @@ class _CameraScreenState extends State<CameraScreen> {
         return;
       }
 
-      // Use the first camera (usually front/webcam on laptop)
-      // Prefer front camera if available
-      final frontCam = _cameras.firstWhere(
+      // Default to Front
+      final initialCamera = _cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.front,
         orElse: () => _cameras.first,
       );
 
-      _controller = CameraController(
-        frontCam, 
-        ResolutionPreset.medium, 
-        enableAudio: false
-      );
-
-      await _controller!.initialize();
+      await _startCamera(initialCamera);
+      
       if (!mounted) return;
       setState(() => _isInit = true);
     } catch (e) {
@@ -55,54 +49,109 @@ class _CameraScreenState extends State<CameraScreen> {
     }
   }
 
+  Future<void> _startCamera(CameraDescription camera) async {
+    if (_controller != null) {
+      await _controller!.dispose();
+    }
+    
+    _selectedCamera = camera;
+
+    _controller = CameraController(
+      camera, 
+      ResolutionPreset.max, 
+      enableAudio: false,
+      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
+    );
+
+    try {
+      await _controller!.initialize();
+      try {
+        await _controller!.setFocusMode(FocusMode.auto);
+        await _controller!.setExposureMode(ExposureMode.auto);
+      } catch (_) {}
+    } catch (e) {
+      print("Camera Start Error: $e");
+    }
+  }
+
+  void _switchCamera() async {
+    if (_cameras.length < 2) return;
+    
+    if (_selectedCamera != null) {
+       final lensDirection = _selectedCamera!.lensDirection;
+       CameraDescription newCamera;
+       
+       if (lensDirection == CameraLensDirection.front) {
+         newCamera = _cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.back, orElse: () => _cameras.first);
+       } else {
+         newCamera = _cameras.firstWhere((c) => c.lensDirection == CameraLensDirection.front, orElse: () => _cameras.first);
+       }
+       
+       setState(() => _isInit = false); 
+       await _startCamera(newCamera);
+       setState(() => _isInit = true);
+    }
+  }
+
   Future<void> _takePicture() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     try {
+      // Simple, direct capture
       final XFile rawFile = await _controller!.takePicture();
-      
-      // Load image
-      final bytes = await rawFile.readAsBytes();
-      img.Image? originalImage = img.decodeImage(bytes);
-      
-      if (originalImage != null) {
-        // Correct orientation for front camera
-        // (Usually front cams are rotated, but we'll assume basic crop logic for now)
-        // Crop Center Area (Simulating the UI Overlay)
-        
-        final int w = originalImage.width;
-        final int h = originalImage.height;
-        
-        // Target: Center 60% Width, 20% Height
-        final int cropW = (w * 0.6).toInt();
-        final int cropH = (cropW * 0.5).toInt(); // 2:1 Aspect Ratio
-        final int cropX = (w - cropW) ~/ 2;
-        final int cropY = (h - cropH) ~/ 2;
-        
-        final cropped = img.copyCrop(originalImage, x: cropX, y: cropY, width: cropW, height: cropH);
-        final jpg = img.encodeJpg(cropped);
-        
-        // Save to temp file
-        final String newPath = '${rawFile.path}_cropped.jpg';
-        if (!kIsWeb) {
-           await File(newPath).writeAsBytes(jpg);
-           if (!mounted) return;
-           Navigator.pop(context, XFile(newPath));
-           return;
-        } else {
-           // For Web, constructing XFile from bytes is tricky, but we can pass bytes back if needed
-           final croppedFile = XFile.fromData(Uint8List.fromList(jpg), mimeType: 'image/jpeg', name: 'cropped.jpg');
-           if (!mounted) return;
-           Navigator.pop(context, croppedFile);
-           return;
-        }
-      }
-
-      if (!mounted) return;
-      Navigator.pop(context, rawFile); // Fallback
+      await _processCenterCrop(rawFile);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Capture failed: $e", style: GoogleFonts.exo2())));
     }
+  }
+
+  Future<void> _processCenterCrop(XFile rawFile) async {
+    final bytes = await rawFile.readAsBytes();
+    img.Image? originalImage = img.decodeImage(bytes);
+    
+    if (originalImage != null) {
+      // Fix rotation
+      originalImage = img.bakeOrientation(originalImage);
+      
+      final int w = originalImage.width;
+      final int h = originalImage.height;
+      
+      // Calculate Crop to match the UI Overlay (80% width, 0.45 aspect ratio)
+      final double overlayWidthFactor = 0.8; 
+      
+      final int cropW = (w * overlayWidthFactor).toInt();
+      final int cropH = (cropW * 0.45).toInt(); 
+      
+      final int cropX = (w - cropW) ~/ 2;
+      final int cropY = (h - cropH) ~/ 2;
+      
+      // Perform Crop
+      final cropped = img.copyCrop(originalImage, x: cropX, y: cropY, width: cropW, height: cropH);
+      final jpg = img.encodeJpg(cropped);
+      
+      final String newPath = '${rawFile.path}_processed.jpg';
+      await File(newPath).writeAsBytes(jpg);
+      
+      if (!mounted) return;
+      Navigator.pop(context, XFile(newPath));
+    } else {
+      if (!mounted) return;
+      Navigator.pop(context, rawFile);
+    }
+  }
+
+  void _onTapFocus(TapUpDetails details, BoxConstraints constraints) {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    
+    final offset = Offset(
+      details.localPosition.dx / constraints.maxWidth,
+      details.localPosition.dy / constraints.maxHeight,
+    );
+    
+    try {
+      _controller!.setFocusPoint(offset);
+      _controller!.setExposurePoint(offset);
+    } catch (_) {}
   }
 
   @override
@@ -127,21 +176,84 @@ class _CameraScreenState extends State<CameraScreen> {
         body: Center(child: CircularProgressIndicator(color: Colors.cyanAccent)),
       );
     }
+    
+    final screenWidth = MediaQuery.of(context).size.width;
+    final overlayWidth = screenWidth * 0.8;
+    final overlayHeight = overlayWidth * 0.45;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          // Camera Feed
-          Center(child: CameraPreview(_controller!)),
+          // 1. Camera Feed with Tap to Focus
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return GestureDetector(
+                onTapUp: (details) => _onTapFocus(details, constraints),
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox.expand(
+                  child: Center(
+                    child: CameraPreview(_controller!),
+                  ),
+                ),
+              );
+            }
+          ),
           
-          // Overlay UI Matches Dark Future Theme
+          // 2. Simple Static Overlay (Guide)
+          Positioned.fill(
+             child: IgnorePointer(
+               child: Stack(
+                 children: [
+                   // Dark Mask
+                   ColorFiltered(
+                     colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.7), BlendMode.srcOut),
+                     child: Stack(
+                       children: [
+                         Container(
+                           decoration: const BoxDecoration(
+                             color: Colors.black,
+                             backgroundBlendMode: BlendMode.dstOut,
+                           ), 
+                         ),
+                         // The "Hole"
+                         Center(
+                           child: Container(
+                             width: overlayWidth,
+                             height: overlayHeight,
+                             decoration: BoxDecoration(
+                               color: Colors.white,
+                               borderRadius: BorderRadius.circular(overlayHeight / 2),
+                             ),
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                   // Simple Border (No animations)
+                   Center(
+                     child: Container(
+                       width: overlayWidth + 20,
+                       height: overlayHeight + 20,
+                       decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(overlayHeight),
+                         border: Border.all(color: Colors.cyanAccent.withOpacity(0.5), width: 2),
+                       ),
+                     ),
+                   ),
+                ],
+              ),
+            ),
+          ),
+          
+          // 3. UI Controls
           Positioned(
             bottom: 40,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                // Close
                 FloatingActionButton(
                   heroTag: "cancel",
                   backgroundColor: Colors.white10,
@@ -149,6 +261,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   child: const Icon(Icons.close, color: Colors.white),
                 ),
                 const SizedBox(width: 40),
+                // Capture
                 FloatingActionButton.large(
                   heroTag: "capture",
                   backgroundColor: Colors.white,
@@ -162,71 +275,18 @@ class _CameraScreenState extends State<CameraScreen> {
                   ),
                 ),
                 const SizedBox(width: 40),
-                 const SizedBox(width: 56), 
+                // Switch Camera
+                 FloatingActionButton(
+                  heroTag: "switch_cam",
+                  backgroundColor: Colors.white10,
+                  onPressed: _switchCamera,
+                  child: const Icon(Icons.cameraswitch, color: Colors.white),
+                ), 
               ],
             ),
           ),
           
-          // Animated Lip Scan Overlay
-          Positioned.fill(
-             child: IgnorePointer(
-               child: Stack(
-                 children: [
-                   // Darken outer area
-                   ColorFiltered(
-                     colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.7), BlendMode.srcOut),
-                     child: Stack(
-                       children: [
-                         Container(
-                           decoration: const BoxDecoration(
-                             color: Colors.black,
-                             backgroundBlendMode: BlendMode.dstOut,
-                           ), 
-                         ),
-                         // The "Hole"
-                         Center(
-                           child: Container(
-                             width: 300,
-                             height: 140,
-                             decoration: BoxDecoration(
-                               color: Colors.white,
-                               borderRadius: BorderRadius.circular(70),
-                             ),
-                           ),
-                         ),
-                       ],
-                     ),
-                   ),
-                   
-                   // Scanning Mesh Points
-                   const Center(
-                     child: _LipMeshAnimation(),
-                   ),
-                   
-                   // Border guideline
-                   Center(
-                     child: Container(
-                       width: 320,
-                       height: 160,
-                       decoration: BoxDecoration(
-                         borderRadius: BorderRadius.circular(80),
-                         border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.5), width: 2),
-                         boxShadow: [
-                           BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.2), blurRadius: 20)
-                         ]
-                       ),
-                     ),
-                   ),
-                   
-                   // Scan Line Animation
-                   const Center(
-                     child: _ScanLine(),
-                   ),
-                 ],
-               ),
-             ),
-          ),
-          
+          // 4. Instruction Text
           Positioned(
             top: 60,
             child: Column(
@@ -241,147 +301,11 @@ class _CameraScreenState extends State<CameraScreen> {
                     shadows: [const Shadow(blurRadius: 10, color: Colors.cyanAccent)]
                   ),
                 ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    "Ensure good lighting & keep camera close",
-                    style: GoogleFonts.exo2(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
               ],
             ),
           )
         ],
       ),
-    );
-  }
-}
-
-class _LipMeshAnimation extends StatefulWidget {
-  const _LipMeshAnimation();
-
-  @override
-  State<_LipMeshAnimation> createState() => _LipMeshAnimationState();
-}
-
-class _LipMeshAnimationState extends State<_LipMeshAnimation> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-       duration: const Duration(seconds: 2),
-       vsync: this,
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return CustomPaint(
-          size: const Size(300, 140),
-          painter: _MeshPainter(_controller.value),
-        );
-      },
-    );
-  }
-}
-
-class _MeshPainter extends CustomPainter {
-  final double progress;
-  _MeshPainter(this.progress);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.cyanAccent.withValues(alpha: 0.4 + (progress * 0.4))
-      ..style = PaintingStyle.fill;
-    
-    final points = [
-      const Offset(0.1, 0.4), const Offset(0.3, 0.3), const Offset(0.5, 0.35), 
-      const Offset(0.7, 0.3), const Offset(0.9, 0.4),
-      const Offset(0.2, 0.6), const Offset(0.4, 0.7), const Offset(0.6, 0.7), 
-      const Offset(0.8, 0.6),
-    ];
-    
-    for (var p in points) {
-      canvas.drawCircle(
-        Offset(p.dx * size.width, p.dy * size.height), 
-        3.0 + (progress * 1.5), 
-        paint
-      );
-    }
-  }
-  
-  @override
-  bool shouldRepaint(_MeshPainter oldDelegate) => true;
-}
-
-class _ScanLine extends StatefulWidget {
-  const _ScanLine();
-
-  @override
-  State<_ScanLine> createState() => _ScanLineState();
-}
-
-class _ScanLineState extends State<_ScanLine> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-       duration: const Duration(seconds: 3),
-       vsync: this,
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, -70 + (_controller.value * 140)),
-          child: Container(
-            width: 280,
-            height: 2,
-            decoration: BoxDecoration(
-              color: Colors.purpleAccent.withValues(alpha: 0.8), // Purple scan line for contrast
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.purpleAccent.withValues(alpha: 0.5),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                )
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

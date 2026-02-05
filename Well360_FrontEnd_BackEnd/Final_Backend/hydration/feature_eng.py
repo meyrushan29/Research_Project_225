@@ -56,14 +56,12 @@ class AdvancedFeatureEngineer(BaseEstimator, TransformerMixin):
         # BODY METRICS
         # --------------------------------------------------
         X["BMI"] = X["Weight"] / ((X["Height"] / 100) ** 2)
-        X["BMI"] = X["BMI"].replace([np.inf, -np.inf], np.nan)
         X["BSA"] = np.sqrt((X["Height"] * X["Weight"]) / 3600)
 
         # --------------------------------------------------
         # HYDRATION INDEX (ml/kg)
         # --------------------------------------------------
         X["Hydration_Index"] = (X["Water_Intake_Last_4_Hours"] * 1000) / X["Weight"]
-        X["Hydration_Index"] = X["Hydration_Index"].replace([np.inf, -np.inf], np.nan)
 
         # --------------------------------------------------
         # ACTIVITY & SWEATING FACTORS
@@ -77,13 +75,10 @@ class AdvancedFeatureEngineer(BaseEstimator, TransformerMixin):
         )
 
         # --------------------------------------------------
-        # URINE HEALTH SCORE (CONTINUOUS 1-10)
+        # URINE HEALTH SCORE
         # --------------------------------------------------
         urine = X["Urine Color (Most Recent Urination)"].clip(1, 8)
-        # 1 (Clear) -> 9.0
-        # 4 (Yellow) -> 6.0
-        # 8 (Dark) -> 2.0
-        X["Urine_Health_Score"] = (10 - urine).clip(lower=0)
+        X["Urine_Health_Score"] = np.where(urine <= 3, 10 - urine, 0)
 
         # --------------------------------------------------
         # SYMPTOM SCORE
@@ -117,19 +112,49 @@ class AdvancedFeatureEngineer(BaseEstimator, TransformerMixin):
         # --------------------------------------------------
         # HEAT INDEX
         # --------------------------------------------------
-        X["Heat_Index"] = 0.5 * (
-            X["Temperature_C"] +
-            61 +
-            ((X["Temperature_C"] - 68) * 1.2) +
-            (X["Humidity_%"] * 0.094)
-        )
+        # --------------------------------------------------
+        # HEAT INDEX (Corrected for C -> F -> C)
+        # --------------------------------------------------
+        # Convert C to F
+        T = X["Temperature_C"] * 1.8 + 32
+        R = X["Humidity_%"]
+
+        # NOAA Regression Equation (Valid for T > 80F, RH > 40%)
+        # For simplicity, we apply it uniformly as the model was trained this way.
+        
+        c1 = -42.379
+        c2 = 2.04901523
+        c3 = 10.14333127
+        c4 = -0.22475541
+        c5 = -0.00683783
+        c6 = -0.05481717
+        c7 = 0.00122874
+        c8 = 0.00085282
+        c9 = -0.00000199
+
+        HI_f = (c1 + (c2 * T) + (c3 * R) + (c4 * T * R) + 
+               (c5 * T**2) + (c6 * R**2) + 
+               (c7 * T**2 * R) + (c8 * T * R**2) + 
+               (c9 * T**2 * R**2))
+
+        # Convert back to C
+        X["Heat_Index"] = (HI_f - 32) / 1.8
 
         # --------------------------------------------------
         # WATER DEFICIT (NEXT 4 HOURS)
         # --------------------------------------------------
-        # Divisor 5 matches 'Active' day (approx 16-20h waking window / 4h blocks)
-        expected = (X["Weight"] * 0.033) / 5
-        X["Water_Deficit"] = (expected - X["Water_Intake_Last_4_Hours"]).clip(lower=0)
+        # Baseline needs: ~0.03 L/kg per day -> per 4 hours (/6)
+        baseline_need = (X["Weight"] * 0.033) / 6
+
+        # Exercise loss: approx 0.5L - 1.5L per hour depending on intensity
+        # We use Activity_Factor as a proxy for intensity multiplier
+        exercise_loss = (X["Exercise Time (minutes) in Last 4 Hours"] / 60) * (X["Activity_Factor"] * 0.4)
+
+        # Sweating loss (additional):
+        sweat_loss = X["Sweating_Factor"] * 0.15  # approx 150ml per level of sweat
+
+        total_need = baseline_need + exercise_loss + sweat_loss
+        X["Water_Deficit"] = (total_need - X["Water_Intake_Last_4_Hours"]).clip(lower=0)
 
         # --------------------------------------------------
         # COMPOSITE HYDRATION SCORE (TIME-AWARE)

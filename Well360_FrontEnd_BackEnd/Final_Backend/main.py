@@ -16,11 +16,9 @@ import datetime
 from datetime import timedelta
 
 from hydration.predict_Regression import AdvancedPredictor, get_current_weather, get_current_time_slot
-from hydration.imagePredict_mobilenet import predict_single
 from core.database import engine, get_db, Base
 from core.models import User, HydrationData, LipAnalysis
 import core.auth as auth
-from fitness.api_handler import get_processor
 
 # =====================================================
 # APP INITIALIZATION & DB SETUP
@@ -197,7 +195,6 @@ def predict_form(
             "Fatigue / Tiredness (Right Now)": user_input["Fatigue"], # REQUIRED: Human readable
             "Headache (Right Now)": user_input["Headache"], # REQUIRED: Human readable
             "Sweating Level (Last 4 Hours)": user_input["Sweating_Level"], # REQUIRED: Human readable
-            "Sweating Level (Last 4 Hours)": user_input["Sweating_Level"], # REQUIRED: Human readable
             "Time Slot (Select Your Current 4-Hour Window)": user_input.get("Time_Slot") or get_current_time_slot(), # Use provided or auto
             "Existing Diseases / Medical Conditions": "None",
             "Temperature_C": temp,
@@ -225,7 +222,40 @@ def predict_form(
         if rec_water > 2.0: risk = "High Dehydration"
         elif rec_water > 1.0: risk = "Mild Dehydration"
 
-        # SAVE TO DATABASE
+        # DELETE OLD ENTRIES FOR SAME TIME SLOT TODAY
+        # This implements Option A: Replace old entry completely instead of keeping duplicates
+        now_local = datetime.datetime.now()
+        today_date_local = now_local.date()
+        
+        # Get the time slot from mapped input
+        time_slot = mapped_input.get("Time Slot (Select Your Current 4-Hour Window)", "Unknown")
+        
+        # Query entries from last 30 hours (safe buffer to cover timezone edge cases)
+        start_query = datetime.datetime.utcnow() - timedelta(hours=30)
+        
+        existing_entries = db.query(HydrationData).filter(
+            HydrationData.user_id == current_user.id,
+            HydrationData.timestamp >= start_query
+        ).all()
+        
+        # Filter for today's entries with same time slot
+        deleted_count = 0
+        for entry in existing_entries:
+            # Convert to local time
+            entry_local_dt = entry.timestamp.replace(tzinfo=datetime.timezone.utc).astimezone() if entry.timestamp.tzinfo is None else entry.timestamp.astimezone()
+            entry_date_local = entry_local_dt.date()
+            
+            # Only delete if it's TODAY and SAME TIME SLOT
+            if entry_date_local == today_date_local and entry.input_data:
+                entry_slot = entry.input_data.get("Time Slot (Select Your Current 4-Hour Window)", "")
+                if entry_slot == time_slot:
+                    db.delete(entry)
+                    deleted_count += 1
+        
+        if deleted_count > 0:
+            print(f"Deleted {deleted_count} old entry(ies) for slot '{time_slot}' on {today_date_local}")
+        
+        # SAVE NEW ENTRY TO DATABASE
         db_entry = HydrationData(
             user_id=current_user.id,
             input_data=user_input,
@@ -262,6 +292,9 @@ def predict_lip(
     db: Session = Depends(get_db)
 ):
     try:
+        # Lazy import so backend can boot without torch/torchvision installed
+        from hydration.imagePredict_mobilenet import predict_single
+
         # Decode and Save Temp
         os.makedirs("temp", exist_ok=True)
         temp_filename = f"temp/{uuid.uuid4()}.png"
@@ -308,6 +341,16 @@ def predict_fitness_video(
     current_user: User = Depends(get_current_user)
 ):
     try:
+        # Lazy import so backend can boot even if MediaPipe stack is unavailable.
+        # If fitness dependencies are missing/broken, we fail this endpoint only.
+        try:
+            from fitness.api_handler import get_processor
+        except Exception as imp_err:
+            raise HTTPException(
+                status_code=503,
+                detail=f"Fitness processor unavailable: {imp_err}"
+            )
+
         # Create temp file
         os.makedirs("temp", exist_ok=True)
         temp_filename = f"temp/{uuid.uuid4()}_{video.filename}"
@@ -459,7 +502,17 @@ def get_hydration_trends(
         hourly_map = {h: 0.0 for h in range(24)}
         today_iso = today_date_local.isoformat()
         
-        deduped_map = {} 
+        # Helper to parse slot to hours
+        def parse_slot_hours(slot_name):
+            slot_name = slot_name.lower().strip()
+            # "Midnight-4 AM", "4 AM-8 AM", "8 AM-12 PM", "12 PM-4 PM", "4 PM-8 PM", "8 PM-Midnight"
+            if "midnight-4 am" in slot_name: return [0, 1, 2, 3]
+            if "4 am-8 am" in slot_name: return [4, 5, 6, 7]
+            if "8 am-12 pm" in slot_name: return [8, 9, 10, 11]
+            if "12 pm-4 pm" in slot_name: return [12, 13, 14, 15]
+            if "4 pm-8 pm" in slot_name: return [16, 17, 18, 19]
+            if "8 pm-midnight" in slot_name: return [20, 21, 22, 23]
+            return []
         
         for e in entries:
             # CONVERT TO LOCAL
@@ -483,26 +536,7 @@ def get_hydration_trends(
                     val = float(e.input_data["Water_Intake_Last_4_Hours"])
                 except: pass
             
-            key = (date_str, slot)
-            
-            # Dedupe logic (Keep latest local timestamp)
-            if key not in deduped_map or local_dt > deduped_map[key][0]:
-                deduped_map[key] = (local_dt, val, e) # Store local_dt and entry
-
-        # Helper to parse slot to hours
-        def parse_slot_hours(slot_name):
-            slot_name = slot_name.lower().strip()
-            # "Midnight-4 AM", "4 AM-8 AM", "8 AM-12 PM", "12 PM-4 PM", "4 PM-8 PM", "8 PM-Midnight"
-            if "midnight-4 am" in slot_name: return [0, 1, 2, 3]
-            if "4 am-8 am" in slot_name: return [4, 5, 6, 7]
-            if "8 am-12 pm" in slot_name: return [8, 9, 10, 11]
-            if "12 pm-4 pm" in slot_name: return [12, 13, 14, 15]
-            if "4 pm-8 pm" in slot_name: return [16, 17, 18, 19]
-            if "8 pm-midnight" in slot_name: return [20, 21, 22, 23]
-            return []
-
-        # Aggregate
-        for (date_str, slot), (local_dt, val, e) in deduped_map.items():
+            # Add to daily total
             if date_str in daily_map:
                 daily_map[date_str] += val
             
@@ -563,26 +597,22 @@ def get_daily_dashboard(
             HydrationData.timestamp >= start_query
         ).all()
         
-        # Filter for TODAY LOCAL
-        slot_map = {}
+        # Filter for TODAY LOCAL and sum intake
+        total_intake = 0.0
         for entry in recent_entries:
             local_dt = to_system_local(entry.timestamp)
             if local_dt.date() != today_date_local:
                  continue
                  
             if not entry.input_data: continue
-            slot = entry.input_data.get("Time Slot (Select Your Current 4-Hour Window)", "Unknown")
             
-            val = 0.0
+            # Extract water intake value
             if "Water_Intake_Last_4_Hours" in entry.input_data:
-                try: val = float(entry.input_data["Water_Intake_Last_4_Hours"])
-                except: continue
-            
-            # Dedupe
-            if slot not in slot_map or local_dt > slot_map[slot][0]:
-                slot_map[slot] = (local_dt, val)
-
-        total_intake = sum(v for _, v in slot_map.values())
+                try: 
+                    val = float(entry.input_data["Water_Intake_Last_4_Hours"])
+                    total_intake += val
+                except: 
+                    continue
                     
         # 2. Get Next 4 Hours Goal (Latest Recommendation)
         latest_hydration = db.query(HydrationData).filter(

@@ -255,18 +255,18 @@ class ImprovedLipTrainer:
         LOG.info(f"✅ Training history saved to {history_path}")
 
 
+# ============================================================
+# MAIN EXECUTION
+# ============================================================
 def main():
     """Main training script"""
-    print("\n" + "=" * 60)
-    print("LIP IMAGE MODEL IMPROVEMENT")
-    print("=" * 60)
+    LOG.info("=" * 60)
+    LOG.info("LIP IMAGE MODEL IMPROVEMENT PIPELINE")
+    LOG.info("=" * 60)
     
-    # Configuration
-    epochs = int(input("\nNumber of epochs (default 30): ").strip() or "30")
-    batch_size_input = input("Batch size (default 32): ").strip()
-    
-    # Note: batch_size from input is not used in load_data_images
-    # It uses BATCH_SIZE from config
+    # Configuration - Non-interactive defaults
+    epochs = 50
+    patience = 7
     
     # Load data using existing function
     LOG.info("Loading image dataset...")
@@ -276,11 +276,6 @@ def main():
         LOG.info(f"Dataset loaded successfully. Classes: {class_names}")
     except Exception as e:
         LOG.error(f"Failed to load data: {e}")
-        print(f"\n⚠️  Error loading dataset: {e}")
-        print("\nPlease ensure:")
-        print(f"1. Images are in: {DATA_DIR}")
-        print("2. Folder structure: data/Dehydrate/ and data/Normal/")
-        print("3. Images are in JPG/PNG format")
         return
     
     # Create improved model
@@ -289,14 +284,14 @@ def main():
     
     # Train
     trainer = ImprovedLipTrainer(model, use_mixed_precision=True)
-    trainer.train(train_loader, test_loader, epochs=epochs, patience=5)
+    trainer.train(train_loader, test_loader, epochs=epochs, patience=patience)
     
     # Save
     trainer.save_model()
     
-    print("\n✅ IMPROVEMENT COMPLETE!")
-    print(f"Best validation accuracy: {trainer.best_val_acc:.2f}%")
-    print(f"Model saved to: {MOBILENET_MODEL_OUT}")
+    LOG.info("=" * 60)
+    LOG.info("LIP MODEL IMPROVEMENT COMPLETE")
+    LOG.info("=" * 60)
 
 
 if __name__ == "__main__":

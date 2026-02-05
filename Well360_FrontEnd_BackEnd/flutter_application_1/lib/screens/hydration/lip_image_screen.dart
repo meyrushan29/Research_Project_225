@@ -79,6 +79,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
 
       // Map to CombinedResultScreen format
       final uiResult = {
+        "prediction": prediction,
         "hydration_risk_level": prediction == "Dehydrate" ? "Dehydrated" : "Normal",
         "hydration_score": score, 
         "recommendations": [

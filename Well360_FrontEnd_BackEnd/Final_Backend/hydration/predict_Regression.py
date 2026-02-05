@@ -114,33 +114,32 @@ class AdvancedPredictor:
         if missing:
             raise ValueError(f"Missing inputs: {missing}")
 
-    def preprocess_input(self, user_input: Dict[str, Any]) -> np.ndarray:
-        df = pd.DataFrame([user_input])
-        df = apply_feature_engineering(df)
-        return self.preprocessor.transform(df)
-
     def predict(self, user_input: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_loaded:
             self.load_models()
 
         self.validate_input(user_input)
-        X = self.preprocess_input(user_input)
-
+        
+        # 1. Feature Engineering (Metrics Calculation)
+        df_raw = pd.DataFrame([user_input])
+        df_engineered = apply_feature_engineering(df_raw)
+        
+        # 2. Model Inference
+        X = self.preprocessor.transform(df_engineered)
+        
         water = float(self.regressor.predict(X)[0])
         risk_code = self.classifier.predict(X)[0]
         hydration_risk = self.label_encoder.inverse_transform([risk_code])[0]
 
-        # -------- Novel Rule-Based Preventive Risks --------
-        temp = user_input["Temperature_C"]
-        humidity = user_input["Humidity_%"]
-        urine = user_input["Urine Color (Most Recent Urination)"]
-        sweat = user_input["Sweating Level (Last 4 Hours)"]
-
+        # 3. Rule-Based Checks (Using Engineered Features - Matches BackendNew)
+        # Extract scalar values from the single-row dataframe
+        row = df_engineered.iloc[0]
+        
         disease_risk_profile = {
-            "heat_exhaustion": "High" if temp >= 32 else "Moderate" if temp >= 28 else "Low",
-            "kidney_stress": "High" if urine >= 7 else "Moderate" if urine >= 5 else "Low",
-            "migraine": "Moderate" if humidity >= 70 else "Low",
-            "electrolyte_imbalance": "Moderate" if sweat in ["Heavy", "Very Heavy"] else "Low"
+            "heat_exhaustion": "High" if row["Heat_Index"] >= 40 else "Moderate" if row["Heat_Index"] >= 32 else "Low",
+            "kidney_stress": "High" if row["Urine Color (Most Recent Urination)"] >= 7 else "Moderate" if row["Urine Color (Most Recent Urination)"] >= 5 else "Low", 
+            "migraine": "High" if row["Water_Deficit"] > 1.0 else "Moderate" if row["Water_Deficit"] > 0.5 else "Low",
+            "electrolyte_imbalance": "High" if row["Sweating_Factor"] >= 3 and row["Water_Intake_Last_4_Hours"] < 0.5 else "Low"
         }
 
         # Calculate Unified Score
@@ -154,8 +153,8 @@ class AdvancedPredictor:
             },
             "disease_risk_profile": disease_risk_profile,
             "environmental_context": {
-                "temperature_celsius": temp,
-                "humidity_percent": humidity,
+                "temperature_celsius": user_input.get("Temperature_C", 25.0),
+                "humidity_percent": user_input.get("Humidity_%", 50.0),
                 "time_window": user_input["Time Slot (Select Your Current 4-Hour Window)"]
             },
             "recommendations": self.generate_recommendations(

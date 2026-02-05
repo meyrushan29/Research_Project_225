@@ -44,25 +44,34 @@ except ImportError:
         save_detailed_report_with_recommendations
     )
 
+mp_pose = None
+mp_draw = None
 try:
-    try:
+    # MediaPipe's classic API is `mediapipe.solutions.*`.
+    # Some environments accidentally install a different/dist-only `mediapipe` package
+    # (or a partial install) that lacks `solutions`. In that case we disable fitness
+    # processing rather than crashing the entire backend at import-time.
+    if hasattr(mp, "solutions") and hasattr(mp.solutions, "pose"):
         mp_pose = mp.solutions.pose
         mp_draw = mp.solutions.drawing_utils
-    except AttributeError:
-        # Workaround for Python 3.12 + new MediaPipe structure
-        import mediapipe.python.solutions as mp_solutions
-        mp_pose = mp_solutions.pose
-        mp_draw = mp_solutions.drawing_utils
+    else:
+        raise ImportError(
+            "MediaPipe 'solutions' API not available (missing mediapipe.solutions.pose)."
+        )
 except Exception as e:
-    print(f"CRITICAL: MediaPipe solutions error: {e}. Fitness features disabled.")
-    import traceback
-    traceback.print_exc()
+    print(f"WARNING: {e} Fitness features disabled.")
     mp_pose = None
     mp_draw = None
 
 class FitnessVideoProcessor:
     def __init__(self):
         print(f"--> Loading Fitness Models from {MODELS_DIR}")
+
+        if mp_pose is None:
+            raise RuntimeError(
+                "Fitness processor cannot start: MediaPipe Pose is unavailable. "
+                "Reinstall the official 'mediapipe' package compatible with your Python version."
+            )
         
         # Load models using absolute paths
         self.model = joblib.load(MODELS_DIR / "exercise_form_detector.pkl")
