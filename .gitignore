@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+env/
+.venv
+*.egg
+
+# Virtual Environment
+Well360_FrontEnd_BackEnd/Final_Backend/venv/
+
+# Large files
+*.pkl
+*.pklz
+*.h5
+*.model
+*.bin
+*.onnx
+*.safetensors
+
+# Large datasets
+*.csv
+*.xlsx
+*.xls
+*.json
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Models and data directories (only if > 100MB)
+Well360_FrontEnd_BackEnd/Final_Backend/fitness/Models_RF/
+Well360_FrontEnd_BackEnd/Final_Backend/fitness/predicted_rf/
+Well360_FrontEnd_BackEnd/Final_Backend/fitness/Models/
