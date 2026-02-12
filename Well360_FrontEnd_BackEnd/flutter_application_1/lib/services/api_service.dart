@@ -102,6 +102,28 @@ class ApiService {
   }
 
   // =====================================================
+  // GET CURRENT WEATHER
+  // =====================================================
+  static Future<Map<String, dynamic>> getWeather(double lat, double lon) async {
+    final token = await AuthService.getToken();
+    if (token == null) throw Exception("Please login first");
+
+    final res = await http.get(
+      Uri.parse("$baseUrl/weather/current?lat=$lat&lon=$lon"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      throw Exception("Failed to fetch weather: ${res.body}");
+    }
+  }
+
+  // =====================================================
   // LIP IMAGE PREDICTION (AUTO PLATFORM)
   // =====================================================
   static Future<Map<String, dynamic>> predictLip({
@@ -203,6 +225,28 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception("Fitness analysis failed (${response.statusCode}): ${response.body}");
+    }
+  }
+
+  // =====================================================
+  // LIP ANALYSIS TRENDS
+  // =====================================================
+  static Future<Map<String, dynamic>> getLipTrends() async {
+    final token = await AuthService.getToken();
+    if (token == null) throw Exception("Please login first");
+
+    final res = await http.get(
+      Uri.parse("$baseUrl/history/lip-trends"),
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (res.statusCode == 200) {
+      return jsonDecode(res.body);
+    } else {
+      throw Exception("Failed to load lip trends: ${res.body}");
     }
   }
 }

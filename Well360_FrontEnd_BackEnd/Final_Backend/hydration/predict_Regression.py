@@ -7,10 +7,12 @@ from core.config import MODEL_REG_PATH, MODEL_CLF_PATH, PREPROCESSOR_PATH, ENCOD
 from core.utils import setup_logging, load_pickle, calculate_unified_score
 from hydration.feature_eng import apply_feature_engineering
 from sklearn.impute import SimpleImputer
-import numpy as np
-
+import shap
+import warnings
+from pathlib import Path
 
 LOG = setup_logging()
+warnings.filterwarnings("ignore", category=UserWarning) # Suppress SHAP/Sklearn version warnings
 
 # =====================================================
 # REQUIRED RAW INPUTS (USER-LEVEL ONLY)
@@ -56,6 +58,7 @@ class AdvancedPredictor:
         self.classifier = None
         self.preprocessor = None
         self.label_encoder = None
+        self.explainer_reg = None  # 🔥 SHAP Explainer
         self.is_loaded = False
 
     def load_models(self):
@@ -84,11 +87,16 @@ class AdvancedPredictor:
         except Exception as e:
             LOG.warning(f"Could not patch imputers (might not be needed): {e}")
 
-        # -------------------------------------------------------------------------
-        # SKLEARN VERSION FIX (monotonic_cst missing in older models)
-        # -------------------------------------------------------------------------
         self._patch_sklearn_object(self.regressor)
         self._patch_sklearn_object(self.classifier)
+
+        # 3. Initialize SHAP Explainer
+        try:
+            # We explain the regressor (water volume) as it's the primary output
+            self.explainer_reg = shap.TreeExplainer(self.regressor)
+            LOG.info("SHAP Explainer initialized for Regressor.")
+        except Exception as e:
+            LOG.warning(f"Could not initialize SHAP: {e}")
 
         self.is_loaded = True
 
@@ -145,11 +153,15 @@ class AdvancedPredictor:
         # Calculate Unified Score
         h_score = calculate_unified_score('form', water)
 
+        # 4. 🔥 XAI: Calculate SHAP Factors
+        xai_factors = self.get_top_factors(X)
+
         return {
             "hydration_prediction": {
                 "recommended_water_liters_next_4h": round(water, 2),
                 "hydration_risk_level": hydration_risk,
-                "hydration_score": h_score
+                "hydration_score": h_score,
+                "ai_reasoning": xai_factors # Included in response
             },
             "disease_risk_profile": disease_risk_profile,
             "environmental_context": {
@@ -161,6 +173,39 @@ class AdvancedPredictor:
                 hydration_risk, disease_risk_profile
             )
         }
+
+    def get_top_factors(self, X_processed: np.ndarray) -> List[Dict[str, Any]]:
+        """Identifies the top 3 features contributing to the water prediction."""
+        if self.explainer_reg is None:
+            return []
+
+        try:
+            shap_values = self.explainer_reg.shap_values(X_processed)
+            
+            # Get feature names from preprocessor
+            feature_names = self.preprocessor.get_feature_names()
+            
+            # Map values to names for the single row (index 0)
+            factors = []
+            for i, val in enumerate(shap_values[0]):
+                factors.append({"feature": feature_names[i], "impact": float(val)})
+            
+            # Sort by absolute impact and take top 3
+            factors.sort(key=lambda x: abs(x["impact"]), reverse=True)
+            top_3 = factors[:3]
+
+            # Format for human reading
+            readable_factors = []
+            for f in top_3:
+                direction = "increases" if f["impact"] > 0 else "decreases"
+                # Clean up feature names (remove num__ or cat__ prefixes)
+                clean_name = f["feature"].replace("num__", "").replace("cat__", "").replace("_", " ")
+                readable_factors.append(f"{clean_name.title()} ({direction} requirement)")
+            
+            return readable_factors
+        except Exception as e:
+            LOG.error(f"XAI Error: {e}")
+            return ["Reasoning currently unavailable"]
 
     @staticmethod
     def generate_recommendations(risk, disease_risk) -> List[str]:

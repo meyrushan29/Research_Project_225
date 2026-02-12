@@ -8,6 +8,7 @@ import '../../services/api_service.dart';
 import '../../services/hydration_results_service.dart';
 import 'combined_result_screen.dart';
 import 'camera_screen.dart';
+import 'lip_trends_screen.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
 
 class LipImageScreen extends StatefulWidget {
@@ -29,7 +30,11 @@ class _LipImageScreenState extends State<LipImageScreen> {
     XFile? pickedFile;
 
     if (source == ImageSource.camera) {
-      // Use Custom Camera Screen
+      // 1. Show Instructions first
+      final proceed = await _showInstructionsDialog();
+      if (proceed != true) return;
+
+      // 2. Use Custom Camera Screen
       final result = await Navigator.push(
         context, 
         MaterialPageRoute(builder: (_) => const CameraScreen())
@@ -82,6 +87,8 @@ class _LipImageScreenState extends State<LipImageScreen> {
         "prediction": prediction,
         "hydration_risk_level": prediction == "Dehydrate" ? "Dehydrated" : "Normal",
         "hydration_score": score, 
+        "xai_url": result['xai_url'],
+        "xai_description": result['xai_description'],
         "recommendations": [
           recommendation,
           "AI Confidence: ${confidence.toStringAsFixed(1)}%",
@@ -106,6 +113,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
       );
 
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Analysis failed: $e", style: GoogleFonts.exo2()),
@@ -117,6 +125,52 @@ class _LipImageScreenState extends State<LipImageScreen> {
         setState(() => loading = false);
       }
     }
+  }
+
+  Future<bool?> _showInstructionsDialog() {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: AlertDialog(
+          backgroundColor: const Color(0xFF15151A),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Colors.white10)),
+          title: Text(
+            "CAPTURE GUIDE",
+            textAlign: TextAlign.center,
+            style: GoogleFonts.orbitron(color: Colors.cyanAccent, fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _instructionItem(Icons.wb_sunny_outlined, "Use flash/brightness slider in low light"),
+              _instructionItem(Icons.face_retouching_natural, "Keep lips relaxed (no pout/smile)"),
+              _instructionItem(Icons.no_photography_outlined, "Remove lipstick or heavy balm"),
+              _instructionItem(Icons.touch_app, "Tap screen to focus on your lips"),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text("I'M READY", style: GoogleFonts.orbitron(color: Colors.greenAccent, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _instructionItem(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.cyanAccent, size: 20),
+          const SizedBox(width: 15),
+          Expanded(child: Text(text, style: GoogleFonts.exo2(color: Colors.white70, fontSize: 14))),
+        ],
+      ),
+    );
   }
 
   // --------------------------------------------------
@@ -141,6 +195,18 @@ class _LipImageScreenState extends State<LipImageScreen> {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.show_chart, color: Colors.cyanAccent),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LipTrendsScreen()),
+              );
+            },
+            tooltip: "View Trends",
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -167,46 +233,50 @@ class _LipImageScreenState extends State<LipImageScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Instructions / Header
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-                        ),
-                        child: Column(
-                          children: [
-                            const Icon(Icons.face_retouching_natural, size: 48, color: Colors.cyanAccent),
-                            const SizedBox(height: 16),
-                            Text(
-                              'AI VISUAL ASSESSMENT',
-                              style: GoogleFonts.orbitron(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 1
+                  if (!hasImage) ...[
+                    _buildPrepGuide(),
+                  ] else ...[
+                    // Instructions / Header
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                          ),
+                          child: Column(
+                            children: [
+                              const Icon(Icons.face_retouching_natural, size: 48, color: Colors.cyanAccent),
+                              const SizedBox(height: 16),
+                              Text(
+                                'AI VISUAL ASSESSMENT',
+                                style: GoogleFonts.orbitron(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 1
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Upload a clear photo of your lips for instant hydration analysis.',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.exo2(
-                                fontSize: 13,
-                                color: Colors.white70,
-                                height: 1.4
+                              const SizedBox(height: 8),
+                              Text(
+                                'Upload a clear photo of your lips for instant hydration analysis.',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.exo2(
+                                  fontSize: 13,
+                                  color: Colors.white70,
+                                  height: 1.4
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
             
                   const SizedBox(height: 24),
             
@@ -513,6 +583,71 @@ class _LipImageScreenState extends State<LipImageScreen> {
           'SELECT DIFFERENT IMAGE',
           style: GoogleFonts.orbitron(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white54, letterSpacing: 1),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPrepGuide() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.cyanAccent.withValues(alpha: 0.1), Colors.transparent],
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.tips_and_updates_outlined, color: Colors.cyanAccent, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                "FOR BEST RESULTS",
+                style: GoogleFonts.orbitron(
+                  color: Colors.cyanAccent, 
+                  fontSize: 14, 
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _stepTip("1", "Find a well-lit area with bright natural light"),
+          const SizedBox(height: 12),
+          _stepTip("2", "Wipe lips clean (no food, lipstick, or balm)"),
+          const SizedBox(height: 12),
+          _stepTip("3", "Maintain a relaxed, natural lip expression"),
+          const SizedBox(height: 12),
+          _stepTip("4", "Steady your hand and align within the ring"),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepTip(String step, String tip) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.03),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 28, height: 28,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.cyanAccent.withValues(alpha: 0.2)),
+            child: Center(child: Text(step, style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold))),
+          ),
+          const SizedBox(width: 16),
+          Expanded(child: Text(tip, style: GoogleFonts.exo2(color: Colors.white70, fontSize: 13))),
+        ],
       ),
     );
   }

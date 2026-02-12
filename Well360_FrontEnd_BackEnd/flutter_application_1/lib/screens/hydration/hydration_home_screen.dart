@@ -25,6 +25,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
   bool _isLoading = true;
 
   List<String> _skippedHours = [];
+  List<Map<String, dynamic>> _filledSlots = [];
 
   @override
   void initState() {
@@ -65,6 +66,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
     final now = DateTime.now();
     final currentHour = now.hour;
     List<String> skippedSlots = [];
+    List<Map<String, dynamic>> filledSlots = [];
     
     // Define time slots
     final slots = [
@@ -83,11 +85,11 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
       String slotName = slot["name"] as String;
       
       // Only check slots that have already passed
-      // Skip if the current time hasn't reached the end of this slot
-      if (currentHour < end) continue;
+      // Skip if the current time hasn't passed the end of this slot
+      if (currentHour <= end) continue;
       
-      // Check if ALL hours in this slot have zero intake
-      bool allZero = true;
+      // Calculate total intake for this slot
+      double totalIntake = 0.0;
       for (int h = start; h <= end; h++) {
         final hourStr = "${h.toString().padLeft(2, '0')}:00";
         final entry = hourlyData.firstWhere(
@@ -95,24 +97,25 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
           orElse: () => null
         );
         
-        double intake = 0.0;
         if (entry != null) {
-          intake = (entry['liters'] is num) ? entry['liters'].toDouble() : 0.0;
-        }
-        
-        if (intake > 0) {
-          allZero = false;
-          break;
+          double intake = (entry['liters'] is num) ? entry['liters'].toDouble() : 0.0;
+          totalIntake += intake;
         }
       }
       
-      // If entire slot has zero intake, mark it as skipped
-      if (allZero) {
+      // Categorize the slot
+      if (totalIntake == 0) {
         skippedSlots.add(slotName);
+      } else {
+        filledSlots.add({
+          "name": slotName,
+          "intake": totalIntake,
+        });
       }
     }
     
     _skippedHours = skippedSlots;
+    _filledSlots = filledSlots;
   }
 
   @override
@@ -171,8 +174,9 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
                   // ==========================
                   // SKIPPED HOURS WIDGET
                   // ==========================
-                  if (_skippedHours.isNotEmpty)
-                    _buildSkippedHoursCard(),
+                  // Time Slots Status Section
+                  if (_skippedHours.isNotEmpty || _filledSlots.isNotEmpty)
+                    _buildTimeSlotStatusCard(),
 
                   const SizedBox(height: 30),
                   
@@ -234,43 +238,168 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
 
   // ... _buildDashboardCard
 
-  Widget _buildSkippedHoursCard() {
+  Widget _buildTimeSlotStatusCard() {
     return Container(
-      padding: const EdgeInsets.all(15),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.redAccent.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+        gradient: LinearGradient(
+          colors: [
+            Colors.deepPurple.withValues(alpha: 0.15),
+            Colors.blueAccent.withValues(alpha: 0.1)
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 20),
+              const Icon(Icons.schedule, color: Colors.purpleAccent, size: 22),
               const SizedBox(width: 10),
               Text(
-                "MISSED TIME SLOTS",
-                style: GoogleFonts.orbitron(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+                "TIME SLOT STATUS",
+                style: GoogleFonts.orbitron(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _skippedHours.map((h) => 
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red.withValues(alpha: 0.3))
+          const SizedBox(height: 16),
+          
+          // Filled Slots Section
+          if (_filledSlots.isNotEmpty) ...[
+            Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  "Completed Slots",
+                  style: GoogleFonts.exo2(
+                    color: Colors.greenAccent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                child: Text(h, style: GoogleFonts.exo2(color: Colors.white, fontWeight: FontWeight.bold)),
-              )
-            ).toList(),
-          )
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _filledSlots.map((slot) => 
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        slot['name'],
+                        style: GoogleFonts.exo2(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.greenAccent.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          "${slot['intake'].toStringAsFixed(2)}L",
+                          style: GoogleFonts.orbitron(
+                            color: Colors.greenAccent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ).toList(),
+            ),
+          ],
+          
+          // Spacing between sections
+          if (_filledSlots.isNotEmpty && _skippedHours.isNotEmpty)
+            const SizedBox(height: 16),
+          
+          // Missed Slots Section
+          if (_skippedHours.isNotEmpty) ...[
+            Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  "Missed Slots",
+                  style: GoogleFonts.exo2(
+                    color: Colors.orangeAccent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _skippedHours.map((slotName) => 
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        slotName,
+                        style: GoogleFonts.exo2(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          "0.00L",
+                          style: GoogleFonts.orbitron(
+                            color: Colors.redAccent,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ).toList(),
+            ),
+          ],
         ],
       ),
     );

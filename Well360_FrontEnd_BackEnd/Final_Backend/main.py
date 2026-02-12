@@ -162,6 +162,18 @@ def get_profile(current_user: User = Depends(get_current_user)):
 # ROUTES: PREDICTION & HISTORY (PROTECTED)
 # =====================================================
 
+@app.get("/weather/current")
+def get_weather(lat: float, lon: float, current_user: User = Depends(get_current_user)):
+    try:
+        temp, hum = get_current_weather(lat, lon)
+        return {
+            "temperature_c": temp,
+            "humidity_percent": hum,
+            "location": {"lat": lat, "lon": lon}
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Weather fetch failed: {e}")
+
 @app.post("/predict/form")
 def predict_form(
     data: FormPredictionRequest,
@@ -279,6 +291,7 @@ def predict_form(
             "predicted_medical_conditions": result["disease_risk_profile"],
             "temperature_c": temp,
             "humidity_percent": hum,
+            "ai_reasoning": result["hydration_prediction"].get("ai_reasoning", []),
             "recommendations": recs
         }
     except Exception as e:
@@ -324,6 +337,12 @@ def predict_lip(
         db.add(db_entry)
         db.commit()
         
+        # Convert paths to URLs for frontend
+        if result.get("saved_image_path"):
+            result["image_url"] = f"/uploads/{os.path.basename(result['saved_image_path'])}"
+        if result.get("xai_heatmap_path"):
+            result["xai_url"] = f"/uploads/{os.path.basename(result['xai_heatmap_path'])}"
+
         return result
         
     except Exception as e:
@@ -440,6 +459,75 @@ def get_lip_history(
         "hydration_score": e.hydration_score,
         "image_url": f"/uploads/{os.path.basename(e.image_path)}" if e.image_path else None
     } for e in entries]
+
+@app.get("/history/lip-trends")
+def get_lip_trends(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns lip hydration score trends for visualization.
+    Shows last 30 days of data.
+    """
+    try:
+        month_ago = datetime.datetime.utcnow() - timedelta(days=30)
+        
+        scans = db.query(LipAnalysis).filter(
+            LipAnalysis.user_id == current_user.id,
+            LipAnalysis.timestamp >= month_ago
+        ).order_by(LipAnalysis.timestamp).all()
+        
+        if not scans:
+            return {
+                "trend_data": [],
+                "summary": {
+                    "total_scans": 0,
+                    "avg_score": 0,
+                    "improvement": 0,
+                    "dehydrated_count": 0,
+                    "normal_count": 0
+                }
+            }
+        
+        # Build trend data
+        trend_data = [{
+            "date": s.timestamp.strftime("%Y-%m-%d"),
+            "score": s.hydration_score,
+            "prediction": s.prediction,
+            "confidence": s.confidence if hasattr(s, 'confidence') else None
+        } for s in scans]
+        
+        # Calculate summary stats
+        scores = [s.hydration_score for s in scans]
+        avg_score = sum(scores) / len(scores)
+        
+        # Calculate improvement (compare first week vs last week)
+        if len(scans) >= 7:
+            first_week_scores = scores[:min(7, len(scores))]
+            last_week_scores = scores[-7:]
+            improvement = (sum(last_week_scores) / len(last_week_scores)) - (sum(first_week_scores) / len(first_week_scores))
+        else:
+            improvement = 0
+        
+        dehydrated_count = sum(1 for s in scans if s.prediction == "Dehydrate")
+        normal_count = len(scans) - dehydrated_count
+        
+        return {
+            "trend_data": trend_data,
+            "summary": {
+                "total_scans": len(scans),
+                "avg_score": round(avg_score, 1),
+                "improvement": round(improvement, 1),
+                "dehydrated_count": dehydrated_count,
+                "normal_count": normal_count,
+                "latest_score": scores[-1] if scores else 0,
+                "best_score": max(scores) if scores else 0,
+                "worst_score": min(scores) if scores else 0
+            }
+        }
+    except Exception as e:
+        print(f"LIP TRENDS ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/history/clear")
 def clear_history(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):

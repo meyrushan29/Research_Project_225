@@ -22,6 +22,11 @@ import numpy as np
 from pathlib import Path
 import json
 from datetime import datetime
+import sys
+import os
+
+# Add project root to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from core.config import DEVICE, MOBILENET_MODEL_OUT, RANDOM_STATE, DATA_DIR
 from core.utils import setup_logging, Timer
@@ -225,7 +230,7 @@ class ImprovedLipTrainer:
                     self.best_val_acc = val_acc
                     self.best_model_state = self.model.state_dict().copy()
                     epochs_no_improve = 0
-                    LOG.info(f"✅ New best model! Val Acc: {val_acc:.2f}%")
+                    LOG.info(f"[NEW BEST] Val Acc: {val_acc:.2f}%")
                 else:
                     epochs_no_improve += 1
                 
@@ -234,8 +239,8 @@ class ImprovedLipTrainer:
                     LOG.info(f"Early stopping after {epoch} epochs (no improvement for {patience} epochs)")
                     break
         
-        LOG.info(f"\n⏱️  Total training time: {t.get_duration():.2f}s")
-        LOG.info(f"🏆 Best validation accuracy: {self.best_val_acc:.2f}%")
+        LOG.info(f"\nTotal training time: {t.get_duration():.2f}s")
+        LOG.info(f"Best validation accuracy: {self.best_val_acc:.2f}%")
         
         # Load best model
         self.model.load_state_dict(self.best_model_state)
@@ -246,13 +251,13 @@ class ImprovedLipTrainer:
             path = MOBILENET_MODEL_OUT
         
         torch.save(self.best_model_state, path)
-        LOG.info(f"✅ Best model saved to {path}")
+        LOG.info(f"Best model saved to {path}")
         
         # Save training history
         history_path = Path(path).parent / "improved_training_history.json"
         with open(history_path, 'w') as f:
             json.dump(self.training_history, f, indent=2)
-        LOG.info(f"✅ Training history saved to {history_path}")
+        LOG.info(f"Training history saved to {history_path}")
 
 
 # ============================================================

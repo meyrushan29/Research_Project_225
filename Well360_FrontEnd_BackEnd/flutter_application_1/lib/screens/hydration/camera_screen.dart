@@ -12,17 +12,36 @@ class CameraScreen extends StatefulWidget {
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
+class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderStateMixin {
   CameraController? _controller;
   List<CameraDescription> _cameras = [];
   bool _isInit = false;
   String? _error;
   CameraDescription? _selectedCamera;
+  
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+  
+  // Quality Enhancement Settings
+  double _currentExposure = 0.0;
+  double _minExposure = 0.0;
+  double _maxExposure = 0.0;
+  bool _isFlashOn = false;
+  bool _showQualityWarning = false;
 
   @override
   void initState() {
     super.initState();
     _initCamera();
+    
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> _initCamera() async {
@@ -58,17 +77,31 @@ class _CameraScreenState extends State<CameraScreen> {
 
     _controller = CameraController(
       camera, 
-      ResolutionPreset.max, 
+      ResolutionPreset.veryHigh, // Changed from max for better quality/performance balance
       enableAudio: false,
       imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.jpeg : ImageFormatGroup.bgra8888,
     );
 
     try {
       await _controller!.initialize();
+      
+      // Get exposure range
+      _minExposure = await _controller!.getMinExposureOffset();
+      _maxExposure = await _controller!.getMaxExposureOffset();
+      
       try {
         await _controller!.setFocusMode(FocusMode.auto);
         await _controller!.setExposureMode(ExposureMode.auto);
+        
+        // For front camera in low light, boost exposure slightly
+        if (camera.lensDirection == CameraLensDirection.front) {
+          final boostValue = (_maxExposure * 0.3).clamp(_minExposure, _maxExposure);
+          await _controller!.setExposureOffset(boostValue);
+          _currentExposure = boostValue;
+        }
       } catch (_) {}
+      
+      if (mounted) setState(() {});
     } catch (e) {
       print("Camera Start Error: $e");
     }
@@ -97,10 +130,23 @@ class _CameraScreenState extends State<CameraScreen> {
     if (_controller == null || !_controller!.value.isInitialized) return;
 
     try {
-      // Simple, direct capture
+      // Enable flash if turned on
+      if (_isFlashOn) {
+        await _controller!.setFlashMode(FlashMode.torch);
+        await Future.delayed(const Duration(milliseconds: 100)); // Let flash stabilize
+      }
+      
+      // Capture with highest quality
       final XFile rawFile = await _controller!.takePicture();
+      
+      // Turn off flash
+      if (_isFlashOn) {
+        await _controller!.setFlashMode(FlashMode.off);
+      }
+      
       await _processCenterCrop(rawFile);
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Capture failed: $e", style: GoogleFonts.exo2())));
     }
   }
@@ -126,8 +172,13 @@ class _CameraScreenState extends State<CameraScreen> {
       final int cropY = (h - cropH) ~/ 2;
       
       // Perform Crop
-      final cropped = img.copyCrop(originalImage, x: cropX, y: cropY, width: cropW, height: cropH);
-      final jpg = img.encodeJpg(cropped);
+      img.Image cropped = img.copyCrop(originalImage, x: cropX, y: cropY, width: cropW, height: cropH);
+      
+      // QUALITY ENHANCEMENT: Improve brightness and contrast for low-light images
+      cropped = _enhanceImageQuality(cropped);
+      
+      // Encode with high quality (100 = maximum quality)
+      final jpg = img.encodeJpg(cropped, quality: 95);
       
       final String newPath = '${rawFile.path}_processed.jpg';
       await File(newPath).writeAsBytes(jpg);
@@ -138,6 +189,51 @@ class _CameraScreenState extends State<CameraScreen> {
       if (!mounted) return;
       Navigator.pop(context, rawFile);
     }
+  }
+  
+  // Enhance image quality for better AI detection
+  img.Image _enhanceImageQuality(img.Image image) {
+    // Calculate average brightness
+    int totalBrightness = 0;
+    int pixelCount = 0;
+    
+    for (int y = 0; y < image.height; y++) {
+      for (int x = 0; x < image.width; x++) {
+        final pixel = image.getPixel(x, y);
+        final r = pixel.r.toInt();
+        final g = pixel.g.toInt();
+        final b = pixel.b.toInt();
+        totalBrightness += ((r + g + b) / 3).round();
+        pixelCount++;
+      }
+    }
+    
+    final avgBrightness = totalBrightness / pixelCount;
+    
+    // If image is too dark (low light), enhance it
+    if (avgBrightness < 100) {
+      // Boost brightness and contrast
+      image = img.adjustColor(image, 
+        brightness: 1.2,  // Increase brightness by 20%
+        contrast: 1.15,   // Increase contrast by 15%
+        saturation: 1.1,  // Slight saturation boost
+      );
+    } else if (avgBrightness < 130) {
+      // Moderate enhancement
+      image = img.adjustColor(image, 
+        brightness: 1.1,
+        contrast: 1.1,
+      );
+    }
+    
+    // Apply slight sharpening for better edge detection
+    image = img.convolution(image, filter: [
+      0, -1, 0,
+      -1, 5, -1,
+      0, -1, 0
+    ]);
+    
+    return image;
   }
 
   void _onTapFocus(TapUpDetails details, BoxConstraints constraints) {
@@ -151,11 +247,42 @@ class _CameraScreenState extends State<CameraScreen> {
     try {
       _controller!.setFocusPoint(offset);
       _controller!.setExposurePoint(offset);
+      
+      // Show focus indicator
+      setState(() => _showQualityWarning = false);
+    } catch (_) {}
+  }
+  
+  void _toggleFlash() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    
+    setState(() => _isFlashOn = !_isFlashOn);
+    
+    // Show feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          _isFlashOn ? "Flash enabled for next capture" : "Flash disabled",
+          style: GoogleFonts.exo2(),
+        ),
+        duration: const Duration(seconds: 1),
+        backgroundColor: _isFlashOn ? Colors.amber.withOpacity(0.8) : Colors.grey.withOpacity(0.8),
+      ),
+    );
+  }
+  
+  void _adjustExposure(double value) async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+    
+    try {
+      await _controller!.setExposureOffset(value);
+      setState(() => _currentExposure = value);
     } catch (_) {}
   }
 
   @override
   void dispose() {
+    _pulseController.dispose();
     _controller?.dispose();
     super.dispose();
   }
@@ -231,14 +358,27 @@ class _CameraScreenState extends State<CameraScreen> {
                        ],
                      ),
                    ),
-                   // Simple Border (No animations)
+                   // Simple Border with Pulse
                    Center(
-                     child: Container(
-                       width: overlayWidth + 20,
-                       height: overlayHeight + 20,
-                       decoration: BoxDecoration(
-                         borderRadius: BorderRadius.circular(overlayHeight),
-                         border: Border.all(color: Colors.cyanAccent.withOpacity(0.5), width: 2),
+                     child: ScaleTransition(
+                       scale: _pulseAnimation,
+                       child: Container(
+                         width: overlayWidth + 4,
+                         height: overlayHeight + 4,
+                         decoration: BoxDecoration(
+                           borderRadius: BorderRadius.circular(overlayHeight),
+                           border: Border.all(
+                             color: Colors.cyanAccent.withOpacity(0.8), 
+                             width: 3,
+                           ),
+                           boxShadow: [
+                             BoxShadow(
+                               color: Colors.cyanAccent.withOpacity(0.3),
+                               blurRadius: 20,
+                               spreadRadius: 2,
+                             )
+                           ]
+                         ),
                        ),
                      ),
                    ),
@@ -260,7 +400,18 @@ class _CameraScreenState extends State<CameraScreen> {
                   onPressed: () => Navigator.pop(context),
                   child: const Icon(Icons.close, color: Colors.white),
                 ),
-                const SizedBox(width: 40),
+                const SizedBox(width: 20),
+                // Flash Toggle
+                FloatingActionButton(
+                  heroTag: "flash",
+                  backgroundColor: _isFlashOn ? Colors.amber.withOpacity(0.3) : Colors.white10,
+                  onPressed: _toggleFlash,
+                  child: Icon(
+                    _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                    color: _isFlashOn ? Colors.amber : Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 20),
                 // Capture
                 FloatingActionButton.large(
                   heroTag: "capture",
@@ -274,7 +425,7 @@ class _CameraScreenState extends State<CameraScreen> {
                     child: const Icon(Icons.camera, color: Colors.black, size: 40),
                   ),
                 ),
-                const SizedBox(width: 40),
+                const SizedBox(width: 20),
                 // Switch Camera
                  FloatingActionButton(
                   heroTag: "switch_cam",
@@ -286,26 +437,109 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
           ),
           
+          // Exposure Control Slider
+          if (_controller != null && _controller!.value.isInitialized)
+            Positioned(
+              right: 20,
+              top: MediaQuery.of(context).size.height * 0.3,
+              child: Container(
+                height: 200,
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.brightness_high, color: Colors.white, size: 20),
+                    Expanded(
+                      child: RotatedBox(
+                        quarterTurns: 3,
+                        child: Slider(
+                          value: _currentExposure,
+                          min: _minExposure,
+                          max: _maxExposure,
+                          activeColor: Colors.cyanAccent,
+                          inactiveColor: Colors.white24,
+                          onChanged: _adjustExposure,
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.brightness_low, color: Colors.white, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          
           // 4. Instruction Text
           Positioned(
             top: 60,
             child: Column(
               children: [
                 Text(
-                  "ALIGN LIPS",
+                  "LIP SCANNER",
                   style: GoogleFonts.orbitron(
                     color: Colors.white, 
-                    fontSize: 24, 
+                    fontSize: 22, 
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
+                    letterSpacing: 3,
                     shadows: [const Shadow(blurRadius: 10, color: Colors.cyanAccent)]
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "PLACE LIPS INSIDE THE PULSING RING",
+                  style: GoogleFonts.exo2(
+                    color: Colors.cyanAccent, 
+                    fontSize: 12, 
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
                   ),
                 ),
               ],
             ),
-          )
+          ),
+          
+          // 5. Bottom Tips Card
+          Positioned(
+            bottom: 150,
+            child: Container(
+              width: screenWidth * 0.85,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.6),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
+              ),
+              child: Column(
+                children: [
+                  _buildTipRow(Icons.wb_sunny, "Use flash or adjust brightness if too dark"),
+                  const SizedBox(height: 10),
+                  _buildTipRow(Icons.face_retouching_natural, "Keep a relaxed, neutral expression"),
+                  const SizedBox(height: 10),
+                  _buildTipRow(Icons.touch_app, "Tap screen to focus on your lips"),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTipRow(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.cyanAccent, size: 16),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.exo2(color: Colors.white70, fontSize: 12),
+          ),
+        ),
+      ],
     );
   }
 }

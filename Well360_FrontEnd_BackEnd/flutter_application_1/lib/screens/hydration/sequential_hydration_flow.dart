@@ -59,6 +59,30 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
     super.initState();
     _setTimeSlot();
     _loadProfile();
+    _fetchWeather();
+  }
+
+  double? _currentTemp;
+  double? _currentHum;
+  bool _weatherLoading = false;
+
+  Future<void> _fetchWeather() async {
+    if (!mounted) return;
+    setState(() => _weatherLoading = true);
+    try {
+      final pos = await LocationService.getLocation();
+      final weather = await ApiService.getWeather(pos.latitude, pos.longitude);
+      if (mounted) {
+        setState(() {
+          _currentTemp = (weather['temperature_c'] as num).toDouble();
+          _currentHum = (weather['humidity_percent'] as num).toDouble();
+        });
+      }
+    } catch (e) {
+      debugPrint("Weather fetch error: $e");
+    } finally {
+      if (mounted) setState(() => _weatherLoading = false);
+    }
   }
 
   @override
@@ -172,6 +196,7 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
         "temperature_c": response['temperature_c'],
         "humidity_percent": response['humidity_percent'],
         "health_risks": risks,
+        "ai_reasoning": response['ai_reasoning'],
         "recommendations": response['recommendations'] ?? [],
       };
 
@@ -244,6 +269,8 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
       final lipUiResult = {
         "hydration_risk_level": prediction == "Dehydrate" ? "Dehydrated" : "Normal",
         "hydration_score": score,
+        "xai_url": result['xai_url'],
+        "xai_description": result['xai_description'],
         "recommendations": [
           result['recommendation'] ?? "No specific advice.",
           "AI Confidence: ${confidence.toStringAsFixed(1)}%",
@@ -405,6 +432,8 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
         key: _formKey,
         child: Column(
           children: [
+            _buildLiveWeatherCard(),
+            const SizedBox(height: 16),
             _buildGlassSection("PERSONAL INFO", Icons.person, [
               Row(children: [
                 Expanded(child: _modernTextField(ageController, "Age", Icons.cake, isInteger: true)),
@@ -682,6 +711,77 @@ class _SequentialHydrationFlowState extends State<SequentialHydrationFlow> {
         ),
         child: Text(label, style: TextStyle(color: isYes ? Colors.white : Colors.white54, fontSize: 11)),
       ),
+    );
+  }
+
+  Widget _buildLiveWeatherCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "LIVE WEATHER",
+                style: GoogleFonts.orbitron(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.cyanAccent,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Local Conditions",
+                style: GoogleFonts.exo2(fontSize: 11, color: Colors.white38),
+              ),
+            ],
+          ),
+          if (_weatherLoading)
+            const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent),
+            )
+          else if (_currentTemp != null)
+            Row(
+              children: [
+                _weatherMetric(Icons.thermostat, "${_currentTemp!.toStringAsFixed(1)}°C"),
+                const SizedBox(width: 12),
+                _weatherMetric(Icons.water_drop, "${_currentHum!.toStringAsFixed(0)}%"),
+              ],
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white38, size: 16),
+              onPressed: _fetchWeather,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _weatherMetric(IconData icon, String value) {
+    return Row(
+      children: [
+        Icon(icon, color: Colors.white70, size: 14),
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: GoogleFonts.orbitron(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 }

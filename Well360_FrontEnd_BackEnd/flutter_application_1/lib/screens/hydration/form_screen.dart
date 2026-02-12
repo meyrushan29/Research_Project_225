@@ -25,6 +25,30 @@ class _FormScreenState extends State<FormScreen> {
     super.initState();
     _setTimeSlot();
     _loadProfile();
+    _fetchWeather();
+  }
+
+  double? _currentTemp;
+  double? _currentHum;
+  bool _weatherLoading = false;
+
+  Future<void> _fetchWeather() async {
+    if (!mounted) return;
+    setState(() => _weatherLoading = true);
+    try {
+      final pos = await LocationService.getLocation();
+      final weather = await ApiService.getWeather(pos.latitude, pos.longitude);
+      if (mounted) {
+        setState(() {
+          _currentTemp = (weather['temperature_c'] as num).toDouble();
+          _currentHum = (weather['humidity_percent'] as num).toDouble();
+        });
+      }
+    } catch (e) {
+      debugPrint("Weather fetch error: $e");
+    } finally {
+      if (mounted) setState(() => _weatherLoading = false);
+    }
   }
 
   void _setTimeSlot() {
@@ -150,6 +174,7 @@ class _FormScreenState extends State<FormScreen> {
         "temperature_c": response['temperature_c'],
         "humidity_percent": response['humidity_percent'],
         "health_risks": risks,
+        "ai_reasoning": response['ai_reasoning'],
         "recommendations": response['recommendations'] ?? [],
       };
 
@@ -170,6 +195,7 @@ class _FormScreenState extends State<FormScreen> {
       );
 
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
            content: Text("Error: $e", style: GoogleFonts.exo2()), 
@@ -233,6 +259,8 @@ class _FormScreenState extends State<FormScreen> {
                       child: Column(
                         children: [
                           const SizedBox(height: 10),
+                          _buildLiveWeatherCard(),
+                          const SizedBox(height: 20),
                           // Personal Information Section
                           _buildGlassSection(
                             title: "PERSONAL INFO",
@@ -700,6 +728,81 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
+  Widget _buildLiveWeatherCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.blueAccent.withValues(alpha: 0.1),
+            Colors.cyanAccent.withValues(alpha: 0.1),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "LIVE WEATHER CONDITION",
+                style: GoogleFonts.orbitron(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.cyanAccent,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "Based on your current location",
+                style: GoogleFonts.exo2(fontSize: 12, color: Colors.white38),
+              ),
+            ],
+          ),
+          if (_weatherLoading)
+            const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.cyanAccent),
+            )
+          else if (_currentTemp != null)
+            Row(
+              children: [
+                _weatherMetric(Icons.thermostat, "${_currentTemp!.toStringAsFixed(1)}°C"),
+                const SizedBox(width: 16),
+                _weatherMetric(Icons.water_drop, "${_currentHum!.toStringAsFixed(0)}%"),
+              ],
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white38, size: 20),
+              onPressed: _fetchWeather,
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _weatherMetric(IconData icon, String value) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white70, size: 16),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.orbitron(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   void dispose() {

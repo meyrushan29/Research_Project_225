@@ -488,3 +488,780 @@ Epoch 9/50:
 2026-02-04 18:58:47,769 - hydration_ml - INFO - Feature engineering completed | Features: 31
 2026-02-04 19:17:11,299 - hydration_ml - INFO - Feature engineering completed | Features: 31
 2026-02-04 19:21:06,510 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-05 14:19:29,330 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-05 14:19:31,224 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-05 14:19:31,241 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-05 14:19:31,242 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-05 14:19:31,687 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-06 11:25:23,929 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-06 11:25:24,493 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-06 11:25:24,500 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-06 11:25:24,507 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-06 11:25:24,708 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-06 11:25:24,808 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-06 11:36:40,053 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-06 11:36:40,294 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-06 11:36:40,295 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-06 11:36:40,296 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-06 11:36:40,479 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-06 11:36:40,550 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-06 14:07:00,607 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-06 14:07:00,921 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-06 14:07:00,922 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-06 14:07:00,922 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-06 14:07:01,012 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-06 14:07:01,061 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-06 14:14:12,089 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-07 06:42:25,590 - hydration_ml - INFO - ============================================================
+2026-02-07 06:42:25,590 - hydration_ml - INFO - LIP IMAGE MODEL IMPROVEMENT PIPELINE
+2026-02-07 06:42:25,591 - hydration_ml - INFO - ============================================================
+2026-02-07 06:42:25,591 - hydration_ml - INFO - Loading image dataset...
+2026-02-07 06:42:25,611 - hydration_ml - INFO - Dataset loaded successfully. Classes: ['Dehydrate', 'Normal']
+2026-02-07 06:42:25,763 - hydration_ml - INFO - Model created with 3,013,122 parameters
+2026-02-07 06:42:25,778 - hydration_ml - INFO - ============================================================
+2026-02-07 06:42:25,779 - hydration_ml - INFO - IMPROVED LIP MODEL TRAINING
+2026-02-07 06:42:25,779 - hydration_ml - INFO - Device: cpu
+2026-02-07 06:42:25,780 - hydration_ml - INFO - Mixed Precision: False
+2026-02-07 06:42:25,781 - hydration_ml - INFO - ============================================================
+2026-02-07 06:42:26,558 - hydration_ml - INFO - Epoch 1 [0/19] Loss: 0.7398 Acc: 50.00%
+2026-02-07 06:42:30,256 - hydration_ml - INFO - Epoch 1 [10/19] Loss: 0.6298 Acc: 54.55%
+2026-02-07 06:42:33,859 - hydration_ml - INFO - 
+Epoch 1/50:
+2026-02-07 06:42:33,860 - hydration_ml - INFO -   Train Loss: 0.6958 | Train Acc: 60.93%
+2026-02-07 06:42:33,860 - hydration_ml - INFO -   Val Loss:   0.5178 | Val Acc:   84.21%
+
+2026-02-07 06:42:34,217 - hydration_ml - INFO - Epoch 2 [0/19] Loss: 0.2956 Acc: 100.00%
+2026-02-07 06:42:38,044 - hydration_ml - INFO - Epoch 2 [10/19] Loss: 0.7187 Acc: 78.41%
+2026-02-07 06:42:41,571 - hydration_ml - INFO - 
+Epoch 2/50:
+2026-02-07 06:42:41,571 - hydration_ml - INFO -   Train Loss: 0.5615 | Train Acc: 78.15%
+2026-02-07 06:42:41,571 - hydration_ml - INFO -   Val Loss:   0.4720 | Val Acc:   76.32%
+
+2026-02-07 06:42:41,912 - hydration_ml - INFO - Epoch 3 [0/19] Loss: 0.5003 Acc: 87.50%
+2026-02-07 06:42:45,677 - hydration_ml - INFO - Epoch 3 [10/19] Loss: 0.8595 Acc: 75.00%
+2026-02-07 06:42:49,192 - hydration_ml - INFO - 
+Epoch 3/50:
+2026-02-07 06:42:49,192 - hydration_ml - INFO -   Train Loss: 0.6300 | Train Acc: 70.86%
+2026-02-07 06:42:49,193 - hydration_ml - INFO -   Val Loss:   0.4793 | Val Acc:   84.21%
+
+2026-02-07 06:42:49,575 - hydration_ml - INFO - Epoch 4 [0/19] Loss: 0.3105 Acc: 100.00%
+2026-02-07 06:42:53,293 - hydration_ml - INFO - Epoch 4 [10/19] Loss: 0.7547 Acc: 81.82%
+2026-02-07 06:42:56,797 - hydration_ml - INFO - 
+Epoch 4/50:
+2026-02-07 06:42:56,797 - hydration_ml - INFO -   Train Loss: 0.4674 | Train Acc: 83.44%
+2026-02-07 06:42:56,798 - hydration_ml - INFO -   Val Loss:   0.4742 | Val Acc:   81.58%
+
+2026-02-07 06:42:57,160 - hydration_ml - INFO - Epoch 5 [0/19] Loss: 0.5551 Acc: 62.50%
+2026-02-07 06:43:00,827 - hydration_ml - INFO - Epoch 5 [10/19] Loss: 0.6201 Acc: 79.55%
+2026-02-07 06:43:04,231 - hydration_ml - INFO - 
+Epoch 5/50:
+2026-02-07 06:43:04,231 - hydration_ml - INFO -   Train Loss: 0.4154 | Train Acc: 84.11%
+2026-02-07 06:43:04,231 - hydration_ml - INFO -   Val Loss:   0.3945 | Val Acc:   92.11%
+
+2026-02-07 06:43:04,582 - hydration_ml - INFO - Epoch 6 [0/19] Loss: 0.3690 Acc: 87.50%
+2026-02-07 06:43:08,233 - hydration_ml - INFO - Epoch 6 [10/19] Loss: 0.2552 Acc: 87.50%
+2026-02-07 06:43:11,639 - hydration_ml - INFO - 
+Epoch 6/50:
+2026-02-07 06:43:11,640 - hydration_ml - INFO -   Train Loss: 0.3827 | Train Acc: 88.74%
+2026-02-07 06:43:11,640 - hydration_ml - INFO -   Val Loss:   0.4074 | Val Acc:   84.21%
+
+2026-02-07 06:43:12,023 - hydration_ml - INFO - Epoch 7 [0/19] Loss: 0.5246 Acc: 87.50%
+2026-02-07 06:43:15,638 - hydration_ml - INFO - Epoch 7 [10/19] Loss: 0.2439 Acc: 90.91%
+2026-02-07 06:43:19,001 - hydration_ml - INFO - 
+Epoch 7/50:
+2026-02-07 06:43:19,002 - hydration_ml - INFO -   Train Loss: 0.4253 | Train Acc: 90.07%
+2026-02-07 06:43:19,002 - hydration_ml - INFO -   Val Loss:   0.3719 | Val Acc:   89.47%
+
+2026-02-07 06:43:19,391 - hydration_ml - INFO - Epoch 8 [0/19] Loss: 0.3252 Acc: 87.50%
+2026-02-07 06:43:22,975 - hydration_ml - INFO - Epoch 8 [10/19] Loss: 0.4088 Acc: 92.05%
+2026-02-07 06:43:26,366 - hydration_ml - INFO - 
+Epoch 8/50:
+2026-02-07 06:43:26,366 - hydration_ml - INFO -   Train Loss: 0.3175 | Train Acc: 94.04%
+2026-02-07 06:43:26,366 - hydration_ml - INFO -   Val Loss:   0.3275 | Val Acc:   92.11%
+
+2026-02-07 06:43:26,703 - hydration_ml - INFO - Epoch 9 [0/19] Loss: 0.2935 Acc: 100.00%
+2026-02-07 06:43:30,338 - hydration_ml - INFO - Epoch 9 [10/19] Loss: 0.2578 Acc: 92.05%
+2026-02-07 06:43:33,683 - hydration_ml - INFO - 
+Epoch 9/50:
+2026-02-07 06:43:33,684 - hydration_ml - INFO -   Train Loss: 0.3521 | Train Acc: 92.05%
+2026-02-07 06:43:33,684 - hydration_ml - INFO -   Val Loss:   0.3315 | Val Acc:   94.74%
+
+2026-02-07 06:43:34,032 - hydration_ml - INFO - Epoch 10 [0/19] Loss: 0.4369 Acc: 87.50%
+2026-02-07 06:43:37,780 - hydration_ml - INFO - Epoch 10 [10/19] Loss: 0.3079 Acc: 93.18%
+2026-02-07 06:43:41,207 - hydration_ml - INFO - 
+Epoch 10/50:
+2026-02-07 06:43:41,207 - hydration_ml - INFO -   Train Loss: 0.3498 | Train Acc: 94.70%
+2026-02-07 06:43:41,207 - hydration_ml - INFO -   Val Loss:   0.4274 | Val Acc:   89.47%
+
+2026-02-07 06:43:41,560 - hydration_ml - INFO - Epoch 11 [0/19] Loss: 0.4648 Acc: 75.00%
+2026-02-07 06:43:45,216 - hydration_ml - INFO - Epoch 11 [10/19] Loss: 0.4164 Acc: 94.32%
+2026-02-07 06:43:48,664 - hydration_ml - INFO - 
+Epoch 11/50:
+2026-02-07 06:43:48,665 - hydration_ml - INFO -   Train Loss: 0.3584 | Train Acc: 90.73%
+2026-02-07 06:43:48,665 - hydration_ml - INFO -   Val Loss:   0.3508 | Val Acc:   92.11%
+
+2026-02-07 06:43:49,028 - hydration_ml - INFO - Epoch 12 [0/19] Loss: 0.3543 Acc: 87.50%
+2026-02-07 06:43:52,785 - hydration_ml - INFO - Epoch 12 [10/19] Loss: 0.3105 Acc: 97.73%
+2026-02-07 06:43:56,314 - hydration_ml - INFO - 
+Epoch 12/50:
+2026-02-07 06:43:56,314 - hydration_ml - INFO -   Train Loss: 0.2812 | Train Acc: 98.01%
+2026-02-07 06:43:56,314 - hydration_ml - INFO -   Val Loss:   0.3602 | Val Acc:   92.11%
+
+2026-02-07 06:43:56,672 - hydration_ml - INFO - Epoch 13 [0/19] Loss: 0.4015 Acc: 87.50%
+2026-02-07 06:44:00,337 - hydration_ml - INFO - Epoch 13 [10/19] Loss: 0.2268 Acc: 89.77%
+2026-02-07 06:44:03,812 - hydration_ml - INFO - 
+Epoch 13/50:
+2026-02-07 06:44:03,813 - hydration_ml - INFO -   Train Loss: 0.3579 | Train Acc: 91.39%
+2026-02-07 06:44:03,813 - hydration_ml - INFO -   Val Loss:   0.3108 | Val Acc:   94.74%
+
+2026-02-07 06:44:04,209 - hydration_ml - INFO - Epoch 14 [0/19] Loss: 0.3121 Acc: 100.00%
+2026-02-07 06:44:08,011 - hydration_ml - INFO - Epoch 14 [10/19] Loss: 0.2705 Acc: 93.18%
+2026-02-07 06:44:11,495 - hydration_ml - INFO - 
+Epoch 14/50:
+2026-02-07 06:44:11,495 - hydration_ml - INFO -   Train Loss: 0.3315 | Train Acc: 92.72%
+2026-02-07 06:44:11,495 - hydration_ml - INFO -   Val Loss:   0.4018 | Val Acc:   86.84%
+
+2026-02-07 06:44:11,837 - hydration_ml - INFO - Epoch 15 [0/19] Loss: 0.3310 Acc: 100.00%
+2026-02-07 06:44:15,474 - hydration_ml - INFO - Epoch 15 [10/19] Loss: 0.3859 Acc: 90.91%
+2026-02-07 06:44:18,939 - hydration_ml - INFO - 
+Epoch 15/50:
+2026-02-07 06:44:18,939 - hydration_ml - INFO -   Train Loss: 0.3856 | Train Acc: 90.07%
+2026-02-07 06:44:18,939 - hydration_ml - INFO -   Val Loss:   0.3467 | Val Acc:   84.21%
+
+2026-02-07 06:44:19,301 - hydration_ml - INFO - Epoch 16 [0/19] Loss: 0.2255 Acc: 100.00%
+2026-02-07 06:44:23,017 - hydration_ml - INFO - Epoch 16 [10/19] Loss: 0.3274 Acc: 89.77%
+2026-02-07 06:44:26,677 - hydration_ml - INFO - 
+Epoch 16/50:
+2026-02-07 06:44:26,679 - hydration_ml - INFO -   Train Loss: 0.3516 | Train Acc: 89.40%
+2026-02-07 06:44:26,679 - hydration_ml - INFO -   Val Loss:   0.3914 | Val Acc:   89.47%
+
+2026-02-07 06:44:26,679 - hydration_ml - INFO - Early stopping after 16 epochs (no improvement for 7 epochs)
+2026-02-07 06:44:26,735 - hydration_ml - INFO - ============================================================
+2026-02-07 06:44:26,735 - hydration_ml - INFO - LIP MODEL IMPROVEMENT COMPLETE
+2026-02-07 06:44:26,736 - hydration_ml - INFO - ============================================================
+2026-02-07 06:54:37,973 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-07 06:54:38,598 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-07 06:54:38,600 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-07 06:54:38,602 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-07 06:54:38,806 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-07 06:54:38,894 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-11 12:16:41,805 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-11 12:16:44,117 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-11 12:16:44,119 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-11 12:16:44,122 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-11 12:16:44,335 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-11 12:16:44,459 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-11 18:31:46,390 - hydration_ml - INFO - ================================================================================
+2026-02-11 18:31:46,391 - hydration_ml - INFO - HYDRATION MANAGEMENT - GLOBAL MODEL IMPROVEMENT & TRAINING PIPELINE
+2026-02-11 18:31:46,391 - hydration_ml - INFO - ================================================================================
+2026-02-11 18:31:46,392 - hydration_ml - INFO - 
+[STEP 1/2] Improving Tabular Models (Hydration Form)...
+2026-02-11 18:31:46,392 - hydration_ml - INFO - ============================================================
+2026-02-11 18:31:46,392 - hydration_ml - INFO - MODEL IMPROVEMENT PIPELINE - TABULAR DATA
+2026-02-11 18:31:46,393 - hydration_ml - INFO - ============================================================
+2026-02-11 18:31:46,455 - hydration_ml - INFO - Data cleaned | Shape: (1608, 23)
+2026-02-11 18:31:46,600 - hydration_ml - INFO - Labeled dataset saved successfully
+2026-02-11 18:31:46,600 - hydration_ml - INFO - Dataset loaded: 1608 samples
+2026-02-11 18:31:46,600 - hydration_ml - INFO - ============================================================
+2026-02-11 18:31:46,601 - hydration_ml - INFO - IMPROVED MODEL TRAINING PIPELINE
+2026-02-11 18:31:46,601 - hydration_ml - INFO - ============================================================
+2026-02-11 18:31:46,602 - hydration_ml - INFO - Preparing features...
+2026-02-11 18:31:46,636 - hydration_ml - INFO - Feature engineering completed | Features: 37
+2026-02-11 18:31:46,650 - hydration_ml - INFO - Train X: (1286, 35), Test X: (322, 35)
+2026-02-11 18:31:46,652 - hydration_ml - INFO - Preprocessor using 18 numeric and 8 categorical features
+2026-02-11 18:31:49,007 - hydration_ml - INFO - Applied SMOTE: (1286, 28) -> (3300, 28)
+2026-02-11 18:31:49,007 - hydration_ml - INFO - Training IMPROVED Regressor (XGBoost)...
+2026-02-11 18:32:21,648 - hydration_ml - INFO - Best params: {'learning_rate': 0.05, 'max_depth': 6, 'n_estimators': 500, 'subsample': 0.8}
+2026-02-11 18:32:21,668 - hydration_ml - INFO - Training IMPROVED Classifier (XGBoost)...
+2026-02-11 18:32:46,713 - hydration_ml - INFO - Best params: {'learning_rate': 0.05, 'max_depth': 10, 'n_estimators': 300}
+2026-02-11 18:32:46,731 - hydration_ml - INFO - Saving improved models...
+2026-02-11 18:32:46,768 - hydration_ml - INFO - 
+============================================================
+2026-02-11 18:32:46,768 - hydration_ml - INFO - IMPROVED MODEL SUMMARY
+2026-02-11 18:32:46,768 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:46,768 - hydration_ml - INFO - Regressor (XGBRegressor):
+2026-02-11 18:32:46,768 - hydration_ml - INFO -   RMSE: 0.0162
+2026-02-11 18:32:46,769 - hydration_ml - INFO -   R²  : 0.9930
+2026-02-11 18:32:46,770 - hydration_ml - INFO - 
+Classifier (XGBClassifier):
+2026-02-11 18:32:46,770 - hydration_ml - INFO -   Accuracy: 1.0000
+2026-02-11 18:32:46,770 - hydration_ml - INFO -   F1 Score: 1.0000
+2026-02-11 18:32:46,770 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:46,771 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:46,771 - hydration_ml - INFO - TABULAR MODEL IMPROVEMENT COMPLETE
+2026-02-11 18:32:46,771 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:46,773 - hydration_ml - INFO - 
+[STEP 2/2] Improving Lip Dehydration Models (Images)...
+2026-02-11 18:32:46,775 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:46,775 - hydration_ml - INFO - LIP IMAGE MODEL IMPROVEMENT PIPELINE
+2026-02-11 18:32:46,775 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:46,775 - hydration_ml - INFO - Loading image dataset...
+2026-02-11 18:32:46,849 - hydration_ml - INFO - Dataset loaded successfully. Classes: ['Dehydrate', 'Normal']
+2026-02-11 18:32:47,092 - hydration_ml - INFO - Model created with 3,013,122 parameters
+2026-02-11 18:32:47,104 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:47,104 - hydration_ml - INFO - IMPROVED LIP MODEL TRAINING
+2026-02-11 18:32:47,105 - hydration_ml - INFO - Device: cpu
+2026-02-11 18:32:47,105 - hydration_ml - INFO - Mixed Precision: False
+2026-02-11 18:32:47,105 - hydration_ml - INFO - ============================================================
+2026-02-11 18:32:48,370 - hydration_ml - INFO - Epoch 1 [0/19] Loss: 0.7398 Acc: 50.00%
+2026-02-11 18:32:53,623 - hydration_ml - INFO - Epoch 1 [10/19] Loss: 0.6298 Acc: 54.55%
+2026-02-11 18:32:58,082 - hydration_ml - INFO - 
+Epoch 1/50:
+2026-02-11 18:32:58,083 - hydration_ml - INFO -   Train Loss: 0.6958 | Train Acc: 60.93%
+2026-02-11 18:32:58,084 - hydration_ml - INFO -   Val Loss:   0.5178 | Val Acc:   84.21%
+
+2026-02-11 18:32:58,515 - hydration_ml - INFO - Epoch 2 [0/19] Loss: 0.2956 Acc: 100.00%
+2026-02-11 18:33:03,145 - hydration_ml - INFO - Epoch 2 [10/19] Loss: 0.7187 Acc: 78.41%
+2026-02-11 18:33:07,682 - hydration_ml - INFO - 
+Epoch 2/50:
+2026-02-11 18:33:07,682 - hydration_ml - INFO -   Train Loss: 0.5615 | Train Acc: 78.15%
+2026-02-11 18:33:07,683 - hydration_ml - INFO -   Val Loss:   0.4720 | Val Acc:   76.32%
+
+2026-02-11 18:33:08,175 - hydration_ml - INFO - Epoch 3 [0/19] Loss: 0.5003 Acc: 87.50%
+2026-02-11 18:33:27,594 - hydration_ml - INFO - Epoch 3 [10/19] Loss: 0.8595 Acc: 75.00%
+2026-02-11 18:33:32,134 - hydration_ml - INFO - 
+Epoch 3/50:
+2026-02-11 18:33:32,134 - hydration_ml - INFO -   Train Loss: 0.6300 | Train Acc: 70.86%
+2026-02-11 18:33:32,136 - hydration_ml - INFO -   Val Loss:   0.4793 | Val Acc:   84.21%
+
+2026-02-11 18:33:32,680 - hydration_ml - INFO - Epoch 4 [0/19] Loss: 0.3105 Acc: 100.00%
+2026-02-11 18:33:37,593 - hydration_ml - INFO - Epoch 4 [10/19] Loss: 0.7547 Acc: 81.82%
+2026-02-11 18:33:42,009 - hydration_ml - INFO - 
+Epoch 4/50:
+2026-02-11 18:33:42,010 - hydration_ml - INFO -   Train Loss: 0.4674 | Train Acc: 83.44%
+2026-02-11 18:33:42,010 - hydration_ml - INFO -   Val Loss:   0.4742 | Val Acc:   81.58%
+
+2026-02-11 18:33:42,613 - hydration_ml - INFO - Epoch 5 [0/19] Loss: 0.5551 Acc: 62.50%
+2026-02-11 18:33:47,163 - hydration_ml - INFO - Epoch 5 [10/19] Loss: 0.6201 Acc: 79.55%
+2026-02-11 18:33:51,383 - hydration_ml - INFO - 
+Epoch 5/50:
+2026-02-11 18:33:51,383 - hydration_ml - INFO -   Train Loss: 0.4154 | Train Acc: 84.11%
+2026-02-11 18:33:51,383 - hydration_ml - INFO -   Val Loss:   0.3945 | Val Acc:   92.11%
+
+2026-02-11 18:33:51,916 - hydration_ml - INFO - Epoch 6 [0/19] Loss: 0.3690 Acc: 87.50%
+2026-02-11 18:33:56,294 - hydration_ml - INFO - Epoch 6 [10/19] Loss: 0.2552 Acc: 87.50%
+2026-02-11 18:34:07,531 - hydration_ml - INFO - 
+Epoch 6/50:
+2026-02-11 18:34:07,535 - hydration_ml - INFO -   Train Loss: 0.3827 | Train Acc: 88.74%
+2026-02-11 18:34:07,536 - hydration_ml - INFO -   Val Loss:   0.4074 | Val Acc:   84.21%
+
+2026-02-11 18:34:10,255 - hydration_ml - INFO - Epoch 7 [0/19] Loss: 0.5246 Acc: 87.50%
+2026-02-11 18:34:27,167 - hydration_ml - INFO - Epoch 7 [10/19] Loss: 0.2439 Acc: 90.91%
+2026-02-11 18:34:31,831 - hydration_ml - INFO - 
+Epoch 7/50:
+2026-02-11 18:34:31,831 - hydration_ml - INFO -   Train Loss: 0.4253 | Train Acc: 90.07%
+2026-02-11 18:34:31,831 - hydration_ml - INFO -   Val Loss:   0.3719 | Val Acc:   89.47%
+
+2026-02-11 18:34:32,544 - hydration_ml - INFO - Epoch 8 [0/19] Loss: 0.3252 Acc: 87.50%
+2026-02-11 18:34:37,087 - hydration_ml - INFO - Epoch 8 [10/19] Loss: 0.4088 Acc: 92.05%
+2026-02-11 18:34:41,499 - hydration_ml - INFO - 
+Epoch 8/50:
+2026-02-11 18:34:41,500 - hydration_ml - INFO -   Train Loss: 0.3175 | Train Acc: 94.04%
+2026-02-11 18:34:41,500 - hydration_ml - INFO -   Val Loss:   0.3275 | Val Acc:   92.11%
+
+2026-02-11 18:34:41,996 - hydration_ml - INFO - Epoch 9 [0/19] Loss: 0.2935 Acc: 100.00%
+2026-02-11 18:34:46,862 - hydration_ml - INFO - Epoch 9 [10/19] Loss: 0.2578 Acc: 92.05%
+2026-02-11 18:34:52,130 - hydration_ml - INFO - 
+Epoch 9/50:
+2026-02-11 18:34:52,131 - hydration_ml - INFO -   Train Loss: 0.3521 | Train Acc: 92.05%
+2026-02-11 18:34:52,132 - hydration_ml - INFO -   Val Loss:   0.3315 | Val Acc:   94.74%
+
+2026-02-11 18:34:53,050 - hydration_ml - INFO - Epoch 10 [0/19] Loss: 0.4369 Acc: 87.50%
+2026-02-11 18:35:02,464 - hydration_ml - INFO - Epoch 10 [10/19] Loss: 0.3079 Acc: 93.18%
+2026-02-11 18:35:10,142 - hydration_ml - INFO - 
+Epoch 10/50:
+2026-02-11 18:35:10,143 - hydration_ml - INFO -   Train Loss: 0.3498 | Train Acc: 94.70%
+2026-02-11 18:35:10,144 - hydration_ml - INFO -   Val Loss:   0.4274 | Val Acc:   89.47%
+
+2026-02-11 18:35:10,799 - hydration_ml - INFO - Epoch 11 [0/19] Loss: 0.4648 Acc: 75.00%
+2026-02-11 18:35:17,209 - hydration_ml - INFO - Epoch 11 [10/19] Loss: 0.4164 Acc: 94.32%
+2026-02-11 18:35:22,020 - hydration_ml - INFO - 
+Epoch 11/50:
+2026-02-11 18:35:22,021 - hydration_ml - INFO -   Train Loss: 0.3584 | Train Acc: 90.73%
+2026-02-11 18:35:22,021 - hydration_ml - INFO -   Val Loss:   0.3508 | Val Acc:   92.11%
+
+2026-02-11 18:35:22,531 - hydration_ml - INFO - Epoch 12 [0/19] Loss: 0.3543 Acc: 87.50%
+2026-02-11 18:35:27,695 - hydration_ml - INFO - Epoch 12 [10/19] Loss: 0.3105 Acc: 97.73%
+2026-02-11 18:35:32,277 - hydration_ml - INFO - 
+Epoch 12/50:
+2026-02-11 18:35:32,277 - hydration_ml - INFO -   Train Loss: 0.2812 | Train Acc: 98.01%
+2026-02-11 18:35:32,277 - hydration_ml - INFO -   Val Loss:   0.3602 | Val Acc:   92.11%
+
+2026-02-11 18:35:32,753 - hydration_ml - INFO - Epoch 13 [0/19] Loss: 0.4015 Acc: 87.50%
+2026-02-11 18:35:37,880 - hydration_ml - INFO - Epoch 13 [10/19] Loss: 0.2268 Acc: 89.77%
+2026-02-11 18:35:42,329 - hydration_ml - INFO - 
+Epoch 13/50:
+2026-02-11 18:35:42,330 - hydration_ml - INFO -   Train Loss: 0.3579 | Train Acc: 91.39%
+2026-02-11 18:35:42,330 - hydration_ml - INFO -   Val Loss:   0.3108 | Val Acc:   94.74%
+
+2026-02-11 18:35:42,847 - hydration_ml - INFO - Epoch 14 [0/19] Loss: 0.3121 Acc: 100.00%
+2026-02-11 18:35:47,910 - hydration_ml - INFO - Epoch 14 [10/19] Loss: 0.2705 Acc: 93.18%
+2026-02-11 18:35:52,350 - hydration_ml - INFO - 
+Epoch 14/50:
+2026-02-11 18:35:52,350 - hydration_ml - INFO -   Train Loss: 0.3315 | Train Acc: 92.72%
+2026-02-11 18:35:52,350 - hydration_ml - INFO -   Val Loss:   0.4018 | Val Acc:   86.84%
+
+2026-02-11 18:35:52,785 - hydration_ml - INFO - Epoch 15 [0/19] Loss: 0.3310 Acc: 100.00%
+2026-02-11 18:35:57,318 - hydration_ml - INFO - Epoch 15 [10/19] Loss: 0.3859 Acc: 90.91%
+2026-02-11 18:36:01,783 - hydration_ml - INFO - 
+Epoch 15/50:
+2026-02-11 18:36:01,783 - hydration_ml - INFO -   Train Loss: 0.3856 | Train Acc: 90.07%
+2026-02-11 18:36:01,783 - hydration_ml - INFO -   Val Loss:   0.3467 | Val Acc:   84.21%
+
+2026-02-11 18:36:02,239 - hydration_ml - INFO - Epoch 16 [0/19] Loss: 0.2255 Acc: 100.00%
+2026-02-11 18:36:07,097 - hydration_ml - INFO - Epoch 16 [10/19] Loss: 0.3274 Acc: 89.77%
+2026-02-11 18:36:11,458 - hydration_ml - INFO - 
+Epoch 16/50:
+2026-02-11 18:36:11,459 - hydration_ml - INFO -   Train Loss: 0.3516 | Train Acc: 89.40%
+2026-02-11 18:36:11,459 - hydration_ml - INFO -   Val Loss:   0.3914 | Val Acc:   89.47%
+
+2026-02-11 18:36:11,459 - hydration_ml - INFO - Early stopping after 16 epochs (no improvement for 7 epochs)
+2026-02-11 18:36:11,543 - hydration_ml - INFO - ============================================================
+2026-02-11 18:36:11,543 - hydration_ml - INFO - LIP MODEL IMPROVEMENT COMPLETE
+2026-02-11 18:36:11,543 - hydration_ml - INFO - ============================================================
+2026-02-11 18:36:11,583 - hydration_ml - INFO - 
+================================================================================
+2026-02-11 18:36:11,583 - hydration_ml - INFO - ALL HYDRATION MODELS HAVE BEEN IMPROVED AND RETRAINED
+2026-02-11 18:36:11,583 - hydration_ml - INFO - ================================================================================
+2026-02-11 20:59:07,699 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-11 20:59:09,821 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-11 20:59:09,822 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-11 20:59:09,822 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-11 20:59:09,963 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-11 20:59:10,009 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-11 21:20:16,984 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-11 21:20:19,118 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-11 21:20:19,118 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-11 21:20:19,119 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-11 21:20:19,248 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-11 21:20:19,296 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-11 21:36:27,734 - hydration_ml - INFO - Loading trained hydration models...
+2026-02-11 21:36:29,925 - hydration_ml - INFO - Successfully patched SimpleImputer compatibility.
+2026-02-11 21:36:29,926 - hydration_ml - INFO - Patched XGBRegressor for potential version mismatch.
+2026-02-11 21:36:29,926 - hydration_ml - INFO - Patched XGBClassifier for potential version mismatch.
+2026-02-11 21:36:30,161 - hydration_ml - INFO - SHAP Explainer initialized for Regressor.
+2026-02-11 21:36:30,217 - hydration_ml - INFO - Feature engineering completed | Features: 31
+2026-02-11 22:20:45,847 - hydration_ml - INFO - ============================================================
+2026-02-11 22:20:45,847 - hydration_ml - INFO - LIP IMAGE MODEL IMPROVEMENT PIPELINE
+2026-02-11 22:20:45,847 - hydration_ml - INFO - ============================================================
+2026-02-11 22:20:45,847 - hydration_ml - INFO - Loading image dataset...
+2026-02-11 22:20:45,852 - hydration_ml - INFO - Dataset loaded successfully. Classes: ['Dehydrate', 'Normal']
+2026-02-11 22:20:45,956 - hydration_ml - INFO - Model created with 3,013,122 parameters
+2026-02-11 22:20:45,959 - hydration_ml - INFO - ============================================================
+2026-02-11 22:20:45,959 - hydration_ml - INFO - IMPROVED LIP MODEL TRAINING
+2026-02-11 22:20:45,961 - hydration_ml - INFO - Device: cpu
+2026-02-11 22:20:45,961 - hydration_ml - INFO - Mixed Precision: False
+2026-02-11 22:20:45,961 - hydration_ml - INFO - ============================================================
+2026-02-11 22:20:46,564 - hydration_ml - INFO - Epoch 1 [0/19] Loss: 0.7625 Acc: 50.00%
+2026-02-11 22:20:51,480 - hydration_ml - INFO - Epoch 1 [10/19] Loss: 0.7381 Acc: 68.18%
+2026-02-11 22:20:55,441 - hydration_ml - INFO - 
+Epoch 1/50:
+2026-02-11 22:20:55,441 - hydration_ml - INFO -   Train Loss: 0.6429 | Train Acc: 71.14%
+2026-02-11 22:20:55,441 - hydration_ml - INFO -   Val Loss:   0.6652 | Val Acc:   57.89%
+
+2026-02-11 22:20:55,847 - hydration_ml - INFO - Epoch 2 [0/19] Loss: 0.6782 Acc: 75.00%
+2026-02-11 22:21:00,115 - hydration_ml - INFO - Epoch 2 [10/19] Loss: 0.7169 Acc: 78.41%
+2026-02-11 22:21:03,879 - hydration_ml - INFO - 
+Epoch 2/50:
+2026-02-11 22:21:03,880 - hydration_ml - INFO -   Train Loss: 0.5841 | Train Acc: 79.87%
+2026-02-11 22:21:03,880 - hydration_ml - INFO -   Val Loss:   0.5341 | Val Acc:   81.58%
+
+2026-02-11 22:21:04,323 - hydration_ml - INFO - Epoch 3 [0/19] Loss: 0.7475 Acc: 50.00%
+2026-02-11 22:21:08,336 - hydration_ml - INFO - Epoch 3 [10/19] Loss: 0.7824 Acc: 81.82%
+2026-02-11 22:21:12,154 - hydration_ml - INFO - 
+Epoch 3/50:
+2026-02-11 22:21:12,154 - hydration_ml - INFO -   Train Loss: 0.4719 | Train Acc: 83.89%
+2026-02-11 22:21:12,154 - hydration_ml - INFO -   Val Loss:   0.4372 | Val Acc:   86.84%
+
+2026-02-11 22:21:12,579 - hydration_ml - INFO - Epoch 4 [0/19] Loss: 0.3028 Acc: 100.00%
+2026-02-11 22:21:16,676 - hydration_ml - INFO - Epoch 4 [10/19] Loss: 0.3826 Acc: 90.91%
+2026-02-11 22:21:20,416 - hydration_ml - INFO - 
+Epoch 4/50:
+2026-02-11 22:21:20,416 - hydration_ml - INFO -   Train Loss: 0.4142 | Train Acc: 88.59%
+2026-02-11 22:21:20,417 - hydration_ml - INFO -   Val Loss:   0.4514 | Val Acc:   86.84%
+
+2026-02-11 22:21:20,845 - hydration_ml - INFO - Epoch 5 [0/19] Loss: 0.4486 Acc: 87.50%
+2026-02-11 22:21:24,903 - hydration_ml - INFO - Epoch 5 [10/19] Loss: 0.4985 Acc: 92.05%
+2026-02-11 22:21:28,617 - hydration_ml - INFO - 
+Epoch 5/50:
+2026-02-11 22:21:28,617 - hydration_ml - INFO -   Train Loss: 0.4328 | Train Acc: 89.26%
+2026-02-11 22:21:28,617 - hydration_ml - INFO -   Val Loss:   0.4621 | Val Acc:   89.47%
+
+2026-02-11 22:21:29,032 - hydration_ml - INFO - Epoch 6 [0/19] Loss: 0.4923 Acc: 75.00%
+2026-02-11 22:21:33,021 - hydration_ml - INFO - Epoch 6 [10/19] Loss: 0.3529 Acc: 88.64%
+2026-02-11 22:21:36,709 - hydration_ml - INFO - 
+Epoch 6/50:
+2026-02-11 22:21:36,711 - hydration_ml - INFO -   Train Loss: 0.3842 | Train Acc: 89.26%
+2026-02-11 22:21:36,711 - hydration_ml - INFO -   Val Loss:   0.3733 | Val Acc:   89.47%
+
+2026-02-11 22:21:37,106 - hydration_ml - INFO - Epoch 7 [0/19] Loss: 0.4516 Acc: 87.50%
+2026-02-11 22:21:41,498 - hydration_ml - INFO - Epoch 7 [10/19] Loss: 0.3513 Acc: 87.50%
+2026-02-11 22:21:45,405 - hydration_ml - INFO - 
+Epoch 7/50:
+2026-02-11 22:21:45,406 - hydration_ml - INFO -   Train Loss: 0.3839 | Train Acc: 87.92%
+2026-02-11 22:21:45,406 - hydration_ml - INFO -   Val Loss:   0.4185 | Val Acc:   84.21%
+
+2026-02-11 22:21:45,821 - hydration_ml - INFO - Epoch 8 [0/19] Loss: 0.3324 Acc: 87.50%
+2026-02-11 22:21:50,693 - hydration_ml - INFO - Epoch 8 [10/19] Loss: 0.2974 Acc: 89.77%
+2026-02-11 22:21:55,096 - hydration_ml - INFO - 
+Epoch 8/50:
+2026-02-11 22:21:55,097 - hydration_ml - INFO -   Train Loss: 0.3517 | Train Acc: 92.62%
+2026-02-11 22:21:55,098 - hydration_ml - INFO -   Val Loss:   0.3542 | Val Acc:   94.74%
+
+2026-02-11 22:21:55,863 - hydration_ml - INFO - Epoch 9 [0/19] Loss: 0.3207 Acc: 100.00%
+2026-02-11 22:22:00,531 - hydration_ml - INFO - Epoch 9 [10/19] Loss: 0.3905 Acc: 92.05%
+2026-02-11 22:22:04,504 - hydration_ml - INFO - 
+Epoch 9/50:
+2026-02-11 22:22:04,505 - hydration_ml - INFO -   Train Loss: 0.3446 | Train Acc: 93.96%
+2026-02-11 22:22:04,505 - hydration_ml - INFO -   Val Loss:   0.3914 | Val Acc:   89.47%
+
+2026-02-11 22:22:04,895 - hydration_ml - INFO - Epoch 10 [0/19] Loss: 0.2826 Acc: 100.00%
+2026-02-11 22:22:09,241 - hydration_ml - INFO - Epoch 10 [10/19] Loss: 0.2463 Acc: 98.86%
+2026-02-11 22:22:13,274 - hydration_ml - INFO - 
+Epoch 10/50:
+2026-02-11 22:22:13,274 - hydration_ml - INFO -   Train Loss: 0.3898 | Train Acc: 91.28%
+2026-02-11 22:22:13,274 - hydration_ml - INFO -   Val Loss:   0.3773 | Val Acc:   92.11%
+
+2026-02-11 22:22:13,738 - hydration_ml - INFO - Epoch 11 [0/19] Loss: 0.2349 Acc: 100.00%
+2026-02-11 22:22:18,441 - hydration_ml - INFO - Epoch 11 [10/19] Loss: 0.3616 Acc: 89.77%
+2026-02-11 22:22:22,411 - hydration_ml - INFO - 
+Epoch 11/50:
+2026-02-11 22:22:22,411 - hydration_ml - INFO -   Train Loss: 0.3749 | Train Acc: 89.93%
+2026-02-11 22:22:22,411 - hydration_ml - INFO -   Val Loss:   0.4618 | Val Acc:   86.84%
+
+2026-02-11 22:22:22,842 - hydration_ml - INFO - Epoch 12 [0/19] Loss: 0.5765 Acc: 75.00%
+2026-02-11 22:22:22,847 - hydration_ml - INFO - ============================================================
+2026-02-11 22:22:22,848 - hydration_ml - INFO - LIP IMAGE MODEL IMPROVEMENT PIPELINE
+2026-02-11 22:22:22,848 - hydration_ml - INFO - ============================================================
+2026-02-11 22:22:22,848 - hydration_ml - INFO - Loading image dataset...
+2026-02-11 22:22:22,853 - hydration_ml - INFO - Dataset loaded successfully. Classes: ['Dehydrate', 'Normal']
+2026-02-11 22:22:22,992 - hydration_ml - INFO - Model created with 3,013,122 parameters
+2026-02-11 22:22:22,999 - hydration_ml - INFO - ============================================================
+2026-02-11 22:22:23,000 - hydration_ml - INFO - IMPROVED LIP MODEL TRAINING
+2026-02-11 22:22:23,001 - hydration_ml - INFO - Device: cpu
+2026-02-11 22:22:23,003 - hydration_ml - INFO - Mixed Precision: False
+2026-02-11 22:22:23,005 - hydration_ml - INFO - ============================================================
+2026-02-11 22:22:24,315 - hydration_ml - INFO - Epoch 1 [0/19] Loss: 0.7625 Acc: 50.00%
+2026-02-11 22:22:28,705 - hydration_ml - INFO - Epoch 12 [10/19] Loss: 0.2175 Acc: 90.91%
+2026-02-11 22:22:33,225 - hydration_ml - INFO - Epoch 1 [10/19] Loss: 0.7381 Acc: 68.18%
+2026-02-11 22:22:36,126 - hydration_ml - INFO - 
+Epoch 12/50:
+2026-02-11 22:22:36,126 - hydration_ml - INFO -   Train Loss: 0.3194 | Train Acc: 93.96%
+2026-02-11 22:22:36,127 - hydration_ml - INFO -   Val Loss:   0.4112 | Val Acc:   89.47%
+
+2026-02-11 22:22:36,882 - hydration_ml - INFO - Epoch 13 [0/19] Loss: 0.2393 Acc: 100.00%
+2026-02-11 22:22:41,978 - hydration_ml - INFO - 
+Epoch 1/50:
+2026-02-11 22:22:41,979 - hydration_ml - INFO -   Train Loss: 0.6429 | Train Acc: 71.14%
+2026-02-11 22:22:41,980 - hydration_ml - INFO -   Val Loss:   0.6652 | Val Acc:   57.89%
+
+2026-02-11 22:22:41,984 - hydration_ml - INFO - [NEW BEST] Val Acc: 57.89%
+2026-02-11 22:22:43,015 - hydration_ml - INFO - Epoch 2 [0/19] Loss: 0.6782 Acc: 75.00%
+2026-02-11 22:22:45,809 - hydration_ml - INFO - Epoch 13 [10/19] Loss: 0.2437 Acc: 93.18%
+2026-02-11 22:22:52,015 - hydration_ml - INFO - Epoch 2 [10/19] Loss: 0.7169 Acc: 78.41%
+2026-02-11 22:22:53,932 - hydration_ml - INFO - 
+Epoch 13/50:
+2026-02-11 22:22:53,932 - hydration_ml - INFO -   Train Loss: 0.3750 | Train Acc: 92.62%
+2026-02-11 22:22:53,933 - hydration_ml - INFO -   Val Loss:   0.4473 | Val Acc:   89.47%
+
+2026-02-11 22:22:54,687 - hydration_ml - INFO - Epoch 14 [0/19] Loss: 0.2817 Acc: 87.50%
+2026-02-11 22:22:58,378 - hydration_ml - INFO - 
+Epoch 2/50:
+2026-02-11 22:22:58,379 - hydration_ml - INFO -   Train Loss: 0.5841 | Train Acc: 79.87%
+2026-02-11 22:22:58,380 - hydration_ml - INFO -   Val Loss:   0.5341 | Val Acc:   81.58%
+
+2026-02-11 22:22:58,384 - hydration_ml - INFO - [NEW BEST] Val Acc: 81.58%
+2026-02-11 22:22:59,426 - hydration_ml - INFO - Epoch 3 [0/19] Loss: 0.7475 Acc: 50.00%
+2026-02-11 22:23:03,488 - hydration_ml - INFO - Epoch 14 [10/19] Loss: 0.2160 Acc: 95.45%
+2026-02-11 22:23:08,235 - hydration_ml - INFO - Epoch 3 [10/19] Loss: 0.7824 Acc: 81.82%
+2026-02-11 22:23:11,661 - hydration_ml - INFO - 
+Epoch 14/50:
+2026-02-11 22:23:11,662 - hydration_ml - INFO -   Train Loss: 0.3412 | Train Acc: 93.96%
+2026-02-11 22:23:11,662 - hydration_ml - INFO -   Val Loss:   0.4808 | Val Acc:   86.84%
+
+2026-02-11 22:23:12,493 - hydration_ml - INFO - Epoch 15 [0/19] Loss: 0.4593 Acc: 87.50%
+2026-02-11 22:23:16,138 - hydration_ml - INFO - 
+Epoch 3/50:
+2026-02-11 22:23:16,138 - hydration_ml - INFO -   Train Loss: 0.4719 | Train Acc: 83.89%
+2026-02-11 22:23:16,138 - hydration_ml - INFO -   Val Loss:   0.4372 | Val Acc:   86.84%
+
+2026-02-11 22:23:16,143 - hydration_ml - INFO - [NEW BEST] Val Acc: 86.84%
+2026-02-11 22:23:16,908 - hydration_ml - INFO - Epoch 4 [0/19] Loss: 0.3028 Acc: 100.00%
+2026-02-11 22:23:21,148 - hydration_ml - INFO - Epoch 15 [10/19] Loss: 0.2963 Acc: 89.77%
+2026-02-11 22:23:24,612 - hydration_ml - INFO - Epoch 4 [10/19] Loss: 0.3826 Acc: 90.91%
+2026-02-11 22:23:29,193 - hydration_ml - INFO - 
+Epoch 15/50:
+2026-02-11 22:23:29,193 - hydration_ml - INFO -   Train Loss: 0.3099 | Train Acc: 92.62%
+2026-02-11 22:23:29,193 - hydration_ml - INFO -   Val Loss:   0.4261 | Val Acc:   89.47%
+
+2026-02-11 22:23:29,194 - hydration_ml - INFO - Early stopping after 15 epochs (no improvement for 7 epochs)
+2026-02-11 22:23:29,284 - hydration_ml - INFO - ============================================================
+2026-02-11 22:23:29,284 - hydration_ml - INFO - LIP MODEL IMPROVEMENT COMPLETE
+2026-02-11 22:23:29,285 - hydration_ml - INFO - ============================================================
+2026-02-11 22:23:30,836 - hydration_ml - INFO - 
+Epoch 4/50:
+2026-02-11 22:23:30,837 - hydration_ml - INFO -   Train Loss: 0.4142 | Train Acc: 88.59%
+2026-02-11 22:23:30,837 - hydration_ml - INFO -   Val Loss:   0.4514 | Val Acc:   86.84%
+
+2026-02-11 22:23:31,311 - hydration_ml - INFO - Epoch 5 [0/19] Loss: 0.4486 Acc: 87.50%
+2026-02-11 22:23:35,865 - hydration_ml - INFO - Epoch 5 [10/19] Loss: 0.4985 Acc: 92.05%
+2026-02-11 22:23:39,648 - hydration_ml - INFO - 
+Epoch 5/50:
+2026-02-11 22:23:39,648 - hydration_ml - INFO -   Train Loss: 0.4328 | Train Acc: 89.26%
+2026-02-11 22:23:39,649 - hydration_ml - INFO -   Val Loss:   0.4621 | Val Acc:   89.47%
+
+2026-02-11 22:23:39,651 - hydration_ml - INFO - [NEW BEST] Val Acc: 89.47%
+2026-02-11 22:23:40,080 - hydration_ml - INFO - Epoch 6 [0/19] Loss: 0.4923 Acc: 75.00%
+2026-02-11 22:23:44,217 - hydration_ml - INFO - Epoch 6 [10/19] Loss: 0.3529 Acc: 88.64%
+2026-02-11 22:23:47,868 - hydration_ml - INFO - 
+Epoch 6/50:
+2026-02-11 22:23:47,868 - hydration_ml - INFO -   Train Loss: 0.3842 | Train Acc: 89.26%
+2026-02-11 22:23:47,870 - hydration_ml - INFO -   Val Loss:   0.3733 | Val Acc:   89.47%
+
+2026-02-11 22:23:48,253 - hydration_ml - INFO - Epoch 7 [0/19] Loss: 0.4516 Acc: 87.50%
+2026-02-11 22:23:52,317 - hydration_ml - INFO - Epoch 7 [10/19] Loss: 0.3513 Acc: 87.50%
+2026-02-11 22:23:56,048 - hydration_ml - INFO - 
+Epoch 7/50:
+2026-02-11 22:23:56,049 - hydration_ml - INFO -   Train Loss: 0.3839 | Train Acc: 87.92%
+2026-02-11 22:23:56,049 - hydration_ml - INFO -   Val Loss:   0.4185 | Val Acc:   84.21%
+
+2026-02-11 22:23:56,452 - hydration_ml - INFO - Epoch 8 [0/19] Loss: 0.3324 Acc: 87.50%
+2026-02-11 22:24:00,456 - hydration_ml - INFO - Epoch 8 [10/19] Loss: 0.2974 Acc: 89.77%
+2026-02-11 22:24:04,200 - hydration_ml - INFO - 
+Epoch 8/50:
+2026-02-11 22:24:04,201 - hydration_ml - INFO -   Train Loss: 0.3517 | Train Acc: 92.62%
+2026-02-11 22:24:04,201 - hydration_ml - INFO -   Val Loss:   0.3542 | Val Acc:   94.74%
+
+2026-02-11 22:24:04,203 - hydration_ml - INFO - [NEW BEST] Val Acc: 94.74%
+2026-02-11 22:24:04,652 - hydration_ml - INFO - Epoch 9 [0/19] Loss: 0.3207 Acc: 100.00%
+2026-02-11 22:24:08,672 - hydration_ml - INFO - Epoch 9 [10/19] Loss: 0.3905 Acc: 92.05%
+2026-02-11 22:24:12,368 - hydration_ml - INFO - 
+Epoch 9/50:
+2026-02-11 22:24:12,369 - hydration_ml - INFO -   Train Loss: 0.3446 | Train Acc: 93.96%
+2026-02-11 22:24:12,369 - hydration_ml - INFO -   Val Loss:   0.3914 | Val Acc:   89.47%
+
+2026-02-11 22:24:12,749 - hydration_ml - INFO - Epoch 10 [0/19] Loss: 0.2826 Acc: 100.00%
+2026-02-11 22:24:16,824 - hydration_ml - INFO - Epoch 10 [10/19] Loss: 0.2463 Acc: 98.86%
+2026-02-11 22:24:20,546 - hydration_ml - INFO - 
+Epoch 10/50:
+2026-02-11 22:24:20,547 - hydration_ml - INFO -   Train Loss: 0.3898 | Train Acc: 91.28%
+2026-02-11 22:24:20,547 - hydration_ml - INFO -   Val Loss:   0.3773 | Val Acc:   92.11%
+
+2026-02-11 22:24:20,994 - hydration_ml - INFO - Epoch 11 [0/19] Loss: 0.2349 Acc: 100.00%
+2026-02-11 22:24:25,050 - hydration_ml - INFO - Epoch 11 [10/19] Loss: 0.3616 Acc: 89.77%
+2026-02-11 22:24:28,679 - hydration_ml - INFO - 
+Epoch 11/50:
+2026-02-11 22:24:28,679 - hydration_ml - INFO -   Train Loss: 0.3749 | Train Acc: 89.93%
+2026-02-11 22:24:28,681 - hydration_ml - INFO -   Val Loss:   0.4618 | Val Acc:   86.84%
+
+2026-02-11 22:24:29,056 - hydration_ml - INFO - Epoch 12 [0/19] Loss: 0.5765 Acc: 75.00%
+2026-02-11 22:24:33,138 - hydration_ml - INFO - Epoch 12 [10/19] Loss: 0.2175 Acc: 90.91%
+2026-02-11 22:24:36,761 - hydration_ml - INFO - 
+Epoch 12/50:
+2026-02-11 22:24:36,763 - hydration_ml - INFO -   Train Loss: 0.3194 | Train Acc: 93.96%
+2026-02-11 22:24:36,763 - hydration_ml - INFO -   Val Loss:   0.4112 | Val Acc:   89.47%
+
+2026-02-11 22:24:37,196 - hydration_ml - INFO - Epoch 13 [0/19] Loss: 0.2393 Acc: 100.00%
+2026-02-11 22:24:41,180 - hydration_ml - INFO - Epoch 13 [10/19] Loss: 0.2437 Acc: 93.18%
+2026-02-11 22:24:44,956 - hydration_ml - INFO - 
+Epoch 13/50:
+2026-02-11 22:24:44,956 - hydration_ml - INFO -   Train Loss: 0.3750 | Train Acc: 92.62%
+2026-02-11 22:24:44,958 - hydration_ml - INFO -   Val Loss:   0.4473 | Val Acc:   89.47%
+
+2026-02-11 22:24:45,391 - hydration_ml - INFO - Epoch 14 [0/19] Loss: 0.2817 Acc: 87.50%
+2026-02-11 22:24:49,620 - hydration_ml - INFO - Epoch 14 [10/19] Loss: 0.2160 Acc: 95.45%
+2026-02-11 22:24:53,272 - hydration_ml - INFO - 
+Epoch 14/50:
+2026-02-11 22:24:53,272 - hydration_ml - INFO -   Train Loss: 0.3412 | Train Acc: 93.96%
+2026-02-11 22:24:53,273 - hydration_ml - INFO -   Val Loss:   0.4808 | Val Acc:   86.84%
+
+2026-02-11 22:24:53,676 - hydration_ml - INFO - Epoch 15 [0/19] Loss: 0.4593 Acc: 87.50%
+2026-02-11 22:24:57,768 - hydration_ml - INFO - Epoch 15 [10/19] Loss: 0.2963 Acc: 89.77%
+2026-02-11 22:25:01,425 - hydration_ml - INFO - 
+Epoch 15/50:
+2026-02-11 22:25:01,425 - hydration_ml - INFO -   Train Loss: 0.3099 | Train Acc: 92.62%
+2026-02-11 22:25:01,426 - hydration_ml - INFO -   Val Loss:   0.4261 | Val Acc:   89.47%
+
+2026-02-11 22:25:01,426 - hydration_ml - INFO - Early stopping after 15 epochs (no improvement for 7 epochs)
+2026-02-11 22:25:01,426 - hydration_ml - INFO - 
+Total training time: 158.42s
+2026-02-11 22:25:01,428 - hydration_ml - INFO - Best validation accuracy: 94.74%
+2026-02-11 22:25:01,465 - hydration_ml - INFO - Best model saved to D:\PP2\Research_Project_225\Well360_FrontEnd_BackEnd\Final_Backend\hydration\models\LipModel_MobileNetV2.pth
+2026-02-11 22:25:01,466 - hydration_ml - INFO - Training history saved to D:\PP2\Research_Project_225\Well360_FrontEnd_BackEnd\Final_Backend\hydration\models\improved_training_history.json
+2026-02-11 22:25:01,467 - hydration_ml - INFO - ============================================================
+2026-02-11 22:25:01,467 - hydration_ml - INFO - LIP MODEL IMPROVEMENT COMPLETE
+2026-02-11 22:25:01,467 - hydration_ml - INFO - ============================================================
+2026-02-12 12:54:37,759 - hydration_ml - INFO - ============================================================
+2026-02-12 12:54:37,760 - hydration_ml - INFO - LIP IMAGE MODEL IMPROVEMENT PIPELINE
+2026-02-12 12:54:37,760 - hydration_ml - INFO - ============================================================
+2026-02-12 12:54:37,760 - hydration_ml - INFO - Loading image dataset...
+2026-02-12 12:54:37,784 - hydration_ml - INFO - Dataset loaded successfully. Classes: ['Dehydrate', 'Normal']
+2026-02-12 12:54:37,959 - hydration_ml - INFO - Model created with 3,013,122 parameters
+2026-02-12 12:54:37,968 - hydration_ml - INFO - ============================================================
+2026-02-12 12:54:37,969 - hydration_ml - INFO - IMPROVED LIP MODEL TRAINING
+2026-02-12 12:54:37,970 - hydration_ml - INFO - Device: cpu
+2026-02-12 12:54:37,970 - hydration_ml - INFO - Mixed Precision: False
+2026-02-12 12:54:37,971 - hydration_ml - INFO - ============================================================
+2026-02-12 12:54:38,806 - hydration_ml - INFO - Epoch 1 [0/19] Loss: 0.7625 Acc: 50.00%
+2026-02-12 12:54:43,136 - hydration_ml - INFO - Epoch 1 [10/19] Loss: 0.7381 Acc: 68.18%
+2026-02-12 12:54:47,105 - hydration_ml - INFO - 
+Epoch 1/50:
+2026-02-12 12:54:47,106 - hydration_ml - INFO -   Train Loss: 0.6429 | Train Acc: 71.14%
+2026-02-12 12:54:47,106 - hydration_ml - INFO -   Val Loss:   0.6652 | Val Acc:   57.89%
+
+2026-02-12 12:54:47,137 - hydration_ml - INFO - [NEW BEST] Val Acc: 57.89%
+2026-02-12 12:54:47,559 - hydration_ml - INFO - Epoch 2 [0/19] Loss: 0.6782 Acc: 75.00%
+2026-02-12 12:54:51,952 - hydration_ml - INFO - Epoch 2 [10/19] Loss: 0.7169 Acc: 78.41%
+2026-02-12 12:54:55,795 - hydration_ml - INFO - 
+Epoch 2/50:
+2026-02-12 12:54:55,797 - hydration_ml - INFO -   Train Loss: 0.5841 | Train Acc: 79.87%
+2026-02-12 12:54:55,797 - hydration_ml - INFO -   Val Loss:   0.5341 | Val Acc:   81.58%
+
+2026-02-12 12:54:55,799 - hydration_ml - INFO - [NEW BEST] Val Acc: 81.58%
+2026-02-12 12:54:56,271 - hydration_ml - INFO - Epoch 3 [0/19] Loss: 0.7475 Acc: 50.00%
+2026-02-12 12:55:00,475 - hydration_ml - INFO - Epoch 3 [10/19] Loss: 0.7824 Acc: 81.82%
+2026-02-12 12:55:04,581 - hydration_ml - INFO - 
+Epoch 3/50:
+2026-02-12 12:55:04,581 - hydration_ml - INFO -   Train Loss: 0.4719 | Train Acc: 83.89%
+2026-02-12 12:55:04,582 - hydration_ml - INFO -   Val Loss:   0.4372 | Val Acc:   86.84%
+
+2026-02-12 12:55:04,584 - hydration_ml - INFO - [NEW BEST] Val Acc: 86.84%
+2026-02-12 12:55:05,025 - hydration_ml - INFO - Epoch 4 [0/19] Loss: 0.3028 Acc: 100.00%
+2026-02-12 12:55:09,697 - hydration_ml - INFO - Epoch 4 [10/19] Loss: 0.3826 Acc: 90.91%
+2026-02-12 12:55:13,753 - hydration_ml - INFO - 
+Epoch 4/50:
+2026-02-12 12:55:13,753 - hydration_ml - INFO -   Train Loss: 0.4142 | Train Acc: 88.59%
+2026-02-12 12:55:13,782 - hydration_ml - INFO -   Val Loss:   0.4514 | Val Acc:   86.84%
+
+2026-02-12 12:55:14,241 - hydration_ml - INFO - Epoch 5 [0/19] Loss: 0.4486 Acc: 87.50%
+2026-02-12 12:55:18,550 - hydration_ml - INFO - Epoch 5 [10/19] Loss: 0.4985 Acc: 92.05%
+2026-02-12 12:57:50,282 - hydration_ml - INFO - ============================================================
+2026-02-12 12:57:50,282 - hydration_ml - INFO - LIP IMAGE MODEL IMPROVEMENT PIPELINE
+2026-02-12 12:57:50,282 - hydration_ml - INFO - ============================================================
+2026-02-12 12:57:50,282 - hydration_ml - INFO - Loading image dataset...
+2026-02-12 12:57:50,287 - hydration_ml - INFO - Dataset loaded successfully. Classes: ['Dehydrate', 'Normal']
+2026-02-12 12:57:50,423 - hydration_ml - INFO - Model created with 3,013,122 parameters
+2026-02-12 12:57:50,428 - hydration_ml - INFO - ============================================================
+2026-02-12 12:57:50,432 - hydration_ml - INFO - IMPROVED LIP MODEL TRAINING
+2026-02-12 12:57:50,432 - hydration_ml - INFO - Device: cpu
+2026-02-12 12:57:50,433 - hydration_ml - INFO - Mixed Precision: False
+2026-02-12 12:57:50,433 - hydration_ml - INFO - ============================================================
+2026-02-12 12:57:51,058 - hydration_ml - INFO - Epoch 1 [0/19] Loss: 0.7625 Acc: 50.00%
+2026-02-12 12:57:55,738 - hydration_ml - INFO - Epoch 1 [10/19] Loss: 0.7381 Acc: 68.18%
+2026-02-12 12:58:00,195 - hydration_ml - INFO - 
+Epoch 1/50:
+2026-02-12 12:58:00,196 - hydration_ml - INFO -   Train Loss: 0.6429 | Train Acc: 71.14%
+2026-02-12 12:58:00,196 - hydration_ml - INFO -   Val Loss:   0.6652 | Val Acc:   57.89%
+
+2026-02-12 12:58:00,200 - hydration_ml - INFO - [NEW BEST] Val Acc: 57.89%
+2026-02-12 12:58:00,631 - hydration_ml - INFO - Epoch 2 [0/19] Loss: 0.6782 Acc: 75.00%
+2026-02-12 12:58:05,637 - hydration_ml - INFO - Epoch 2 [10/19] Loss: 0.7169 Acc: 78.41%
+2026-02-12 12:58:10,228 - hydration_ml - INFO - 
+Epoch 2/50:
+2026-02-12 12:58:10,228 - hydration_ml - INFO -   Train Loss: 0.5841 | Train Acc: 79.87%
+2026-02-12 12:58:10,228 - hydration_ml - INFO -   Val Loss:   0.5341 | Val Acc:   81.58%
+
+2026-02-12 12:58:10,231 - hydration_ml - INFO - [NEW BEST] Val Acc: 81.58%
+2026-02-12 12:58:10,715 - hydration_ml - INFO - Epoch 3 [0/19] Loss: 0.7475 Acc: 50.00%
+2026-02-12 12:58:15,188 - hydration_ml - INFO - Epoch 3 [10/19] Loss: 0.7824 Acc: 81.82%
+2026-02-12 12:58:19,453 - hydration_ml - INFO - 
+Epoch 3/50:
+2026-02-12 12:58:19,453 - hydration_ml - INFO -   Train Loss: 0.4719 | Train Acc: 83.89%
+2026-02-12 12:58:19,453 - hydration_ml - INFO -   Val Loss:   0.4372 | Val Acc:   86.84%
+
+2026-02-12 12:58:19,455 - hydration_ml - INFO - [NEW BEST] Val Acc: 86.84%
+2026-02-12 12:58:19,910 - hydration_ml - INFO - Epoch 4 [0/19] Loss: 0.3028 Acc: 100.00%
+2026-02-12 12:58:24,553 - hydration_ml - INFO - Epoch 4 [10/19] Loss: 0.3826 Acc: 90.91%
+2026-02-12 12:58:28,724 - hydration_ml - INFO - 
+Epoch 4/50:
+2026-02-12 12:58:28,724 - hydration_ml - INFO -   Train Loss: 0.4142 | Train Acc: 88.59%
+2026-02-12 12:58:28,724 - hydration_ml - INFO -   Val Loss:   0.4514 | Val Acc:   86.84%
+
+2026-02-12 12:58:29,234 - hydration_ml - INFO - Epoch 5 [0/19] Loss: 0.4486 Acc: 87.50%
+2026-02-12 12:58:33,814 - hydration_ml - INFO - Epoch 5 [10/19] Loss: 0.4985 Acc: 92.05%
+2026-02-12 12:58:38,399 - hydration_ml - INFO - 
+Epoch 5/50:
+2026-02-12 12:58:38,399 - hydration_ml - INFO -   Train Loss: 0.4328 | Train Acc: 89.26%
+2026-02-12 12:58:38,400 - hydration_ml - INFO -   Val Loss:   0.4621 | Val Acc:   89.47%
+
+2026-02-12 12:58:38,402 - hydration_ml - INFO - [NEW BEST] Val Acc: 89.47%
+2026-02-12 12:58:38,912 - hydration_ml - INFO - Epoch 6 [0/19] Loss: 0.4923 Acc: 75.00%
+2026-02-12 12:58:43,449 - hydration_ml - INFO - Epoch 6 [10/19] Loss: 0.3529 Acc: 88.64%
+2026-02-12 12:58:47,545 - hydration_ml - INFO - 
+Epoch 6/50:
+2026-02-12 12:58:47,545 - hydration_ml - INFO -   Train Loss: 0.3842 | Train Acc: 89.26%
+2026-02-12 12:58:47,545 - hydration_ml - INFO -   Val Loss:   0.3733 | Val Acc:   89.47%
+
+2026-02-12 12:58:47,971 - hydration_ml - INFO - Epoch 7 [0/19] Loss: 0.4516 Acc: 87.50%
+2026-02-12 12:58:52,654 - hydration_ml - INFO - Epoch 7 [10/19] Loss: 0.3513 Acc: 87.50%
+2026-02-12 12:58:56,795 - hydration_ml - INFO - 
+Epoch 7/50:
+2026-02-12 12:58:56,795 - hydration_ml - INFO -   Train Loss: 0.3839 | Train Acc: 87.92%
+2026-02-12 12:58:56,796 - hydration_ml - INFO -   Val Loss:   0.4185 | Val Acc:   84.21%
+
+2026-02-12 12:58:57,370 - hydration_ml - INFO - Epoch 8 [0/19] Loss: 0.3324 Acc: 87.50%
+2026-02-12 12:59:01,895 - hydration_ml - INFO - Epoch 8 [10/19] Loss: 0.2974 Acc: 89.77%
+2026-02-12 12:59:06,511 - hydration_ml - INFO - 
+Epoch 8/50:
+2026-02-12 12:59:06,511 - hydration_ml - INFO -   Train Loss: 0.3517 | Train Acc: 92.62%
+2026-02-12 12:59:06,511 - hydration_ml - INFO -   Val Loss:   0.3542 | Val Acc:   94.74%
+
+2026-02-12 12:59:06,515 - hydration_ml - INFO - [NEW BEST] Val Acc: 94.74%
+2026-02-12 12:59:06,969 - hydration_ml - INFO - Epoch 9 [0/19] Loss: 0.3207 Acc: 100.00%
+2026-02-12 12:59:11,760 - hydration_ml - INFO - Epoch 9 [10/19] Loss: 0.3905 Acc: 92.05%
+2026-02-12 12:59:16,040 - hydration_ml - INFO - 
+Epoch 9/50:
+2026-02-12 12:59:16,040 - hydration_ml - INFO -   Train Loss: 0.3446 | Train Acc: 93.96%
+2026-02-12 12:59:16,040 - hydration_ml - INFO -   Val Loss:   0.3914 | Val Acc:   89.47%
+
+2026-02-12 12:59:16,456 - hydration_ml - INFO - Epoch 10 [0/19] Loss: 0.2826 Acc: 100.00%
+2026-02-12 12:59:20,929 - hydration_ml - INFO - Epoch 10 [10/19] Loss: 0.2463 Acc: 98.86%
+2026-02-12 12:59:25,181 - hydration_ml - INFO - 
+Epoch 10/50:
+2026-02-12 12:59:25,182 - hydration_ml - INFO -   Train Loss: 0.3898 | Train Acc: 91.28%
+2026-02-12 12:59:25,182 - hydration_ml - INFO -   Val Loss:   0.3773 | Val Acc:   92.11%
+
+2026-02-12 12:59:25,644 - hydration_ml - INFO - Epoch 11 [0/19] Loss: 0.2349 Acc: 100.00%
+2026-02-12 12:59:30,188 - hydration_ml - INFO - Epoch 11 [10/19] Loss: 0.3616 Acc: 89.77%
+2026-02-12 12:59:34,421 - hydration_ml - INFO - 
+Epoch 11/50:
+2026-02-12 12:59:34,421 - hydration_ml - INFO -   Train Loss: 0.3749 | Train Acc: 89.93%
+2026-02-12 12:59:34,421 - hydration_ml - INFO -   Val Loss:   0.4618 | Val Acc:   86.84%
+
+2026-02-12 12:59:34,842 - hydration_ml - INFO - Epoch 12 [0/19] Loss: 0.5765 Acc: 75.00%
+2026-02-12 12:59:39,868 - hydration_ml - INFO - Epoch 12 [10/19] Loss: 0.2175 Acc: 90.91%
+2026-02-12 12:59:43,959 - hydration_ml - INFO - 
+Epoch 12/50:
+2026-02-12 12:59:43,959 - hydration_ml - INFO -   Train Loss: 0.3194 | Train Acc: 93.96%
+2026-02-12 12:59:43,959 - hydration_ml - INFO -   Val Loss:   0.4112 | Val Acc:   89.47%
+
+2026-02-12 12:59:44,405 - hydration_ml - INFO - Epoch 13 [0/19] Loss: 0.2393 Acc: 100.00%
+2026-02-12 12:59:49,092 - hydration_ml - INFO - Epoch 13 [10/19] Loss: 0.2437 Acc: 93.18%
+2026-02-12 12:59:53,291 - hydration_ml - INFO - 
+Epoch 13/50:
+2026-02-12 12:59:53,292 - hydration_ml - INFO -   Train Loss: 0.3750 | Train Acc: 92.62%
+2026-02-12 12:59:53,292 - hydration_ml - INFO -   Val Loss:   0.4473 | Val Acc:   89.47%
+
+2026-02-12 12:59:53,741 - hydration_ml - INFO - Epoch 14 [0/19] Loss: 0.2817 Acc: 87.50%
+2026-02-12 12:59:58,343 - hydration_ml - INFO - Epoch 14 [10/19] Loss: 0.2160 Acc: 95.45%
+2026-02-12 13:00:02,409 - hydration_ml - INFO - 
+Epoch 14/50:
+2026-02-12 13:00:02,410 - hydration_ml - INFO -   Train Loss: 0.3412 | Train Acc: 93.96%
+2026-02-12 13:00:02,410 - hydration_ml - INFO -   Val Loss:   0.4808 | Val Acc:   86.84%
+
+2026-02-12 13:00:02,853 - hydration_ml - INFO - Epoch 15 [0/19] Loss: 0.4593 Acc: 87.50%
+2026-02-12 13:00:07,820 - hydration_ml - INFO - Epoch 15 [10/19] Loss: 0.2963 Acc: 89.77%
+2026-02-12 13:00:12,192 - hydration_ml - INFO - 
+Epoch 15/50:
+2026-02-12 13:00:12,193 - hydration_ml - INFO -   Train Loss: 0.3099 | Train Acc: 92.62%
+2026-02-12 13:00:12,194 - hydration_ml - INFO -   Val Loss:   0.4261 | Val Acc:   89.47%
+
+2026-02-12 13:00:12,194 - hydration_ml - INFO - Early stopping after 15 epochs (no improvement for 7 epochs)
+2026-02-12 13:00:12,194 - hydration_ml - INFO - 
+Total training time: 141.76s
+2026-02-12 13:00:12,194 - hydration_ml - INFO - Best validation accuracy: 94.74%
+2026-02-12 13:00:12,249 - hydration_ml - INFO - Best model saved to D:\PP2\Research_Project_225\Well360_FrontEnd_BackEnd\Final_Backend\hydration\models\LipModel_MobileNetV2.pth
+2026-02-12 13:00:12,251 - hydration_ml - INFO - Training history saved to D:\PP2\Research_Project_225\Well360_FrontEnd_BackEnd\Final_Backend\hydration\models\improved_training_history.json
+2026-02-12 13:00:12,251 - hydration_ml - INFO - ============================================================
+2026-02-12 13:00:12,251 - hydration_ml - INFO - LIP MODEL IMPROVEMENT COMPLETE
+2026-02-12 13:00:12,252 - hydration_ml - INFO - ============================================================

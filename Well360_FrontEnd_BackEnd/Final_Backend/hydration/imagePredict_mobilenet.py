@@ -14,11 +14,24 @@ try:
     from PIL import Image, ImageDraw, ImageFont, ImageStat
     import matplotlib.pyplot as plt
     import numpy as np
+    import cv2
+    from captum.attr import LayerGradCam
 except ImportError as e:
     print(f"[CRITICAL ERROR] Missing Dependency: {e}")
 
 from core.config import DEVICE, MOBILENET_MODEL_OUT
 from hydration.preprocess_images import get_transforms
+
+# Import new advanced feature extraction
+try:
+    from hydration.lip_feature_extractor import (
+        extract_all_features,
+        calculate_image_quality_score
+    )
+    ADVANCED_FEATURES_AVAILABLE = True
+except ImportError as e:
+    print(f"[Warning] Advanced features not available: {e}")
+    ADVANCED_FEATURES_AVAILABLE = False
 
 
 # ======================================================
@@ -211,8 +224,78 @@ def draw_overlay(image, score, status, warnings=[]):
     return Image.alpha_composite(image, overlay).convert("RGB")
 
 
+
 # ======================================================
-# IMAGE PREDICTION
+# GRAD-CAM VISUALIZATION (XAI)
+# ======================================================
+def generate_gradcam_heatmap(model, input_tensor, target_class, original_image):
+    """
+    Generates a Grad-CAM heatmap overlay and a textual explanation.
+    Returns (heatmap_pil, explanation_text)
+    """
+    try:
+        # Target the last conv layer of MobileNetV2
+        target_layer = model.mobilenet.features[18]
+        lgc = LayerGradCam(model, target_layer)
+        
+        # Attribute
+        atttribution = lgc.attribute(input_tensor, target=target_class, relu_attributions=True)
+        
+        # Process heatmap
+        heatmap = atttribution.squeeze().cpu().detach().numpy()
+        heatmap = np.maximum(heatmap, 0)
+        
+        # Explain based on heatmap distribution
+        # Split into 3x3 grid to find hot zones
+        h, w = heatmap.shape
+        grid_y, grid_x = h // 3, w // 3
+        
+        regions = {
+            "top": np.mean(heatmap[0:grid_y, :]),
+            "bottom": np.mean(heatmap[2*grid_y:, :]),
+            "left": np.mean(heatmap[:, 0:grid_x]),
+            "right": np.mean(heatmap[:, 2*grid_x:]),
+            "center": np.mean(heatmap[grid_y:2*grid_y, grid_x:2*grid_x])
+        }
+        
+        # Find highest region
+        top_region = max(regions, key=regions.get)
+        
+        if regions[top_region] < 0.01:
+            explanation = "The AI looked at the overall lip texture to determine hydration."
+        else:
+            region_map = {
+                "top": "upper lip area",
+                "bottom": "lower lip area",
+                "left": "left corner of the mouth",
+                "right": "right corner of the mouth",
+                "center": "central lip region"
+            }
+            explanation = f"The AI focused primarily on the {region_map[top_region]}, identifying specific texture patterns associated with your hydration level."
+
+        # Normalize for image
+        if np.max(heatmap) > 0:
+            heatmap /= np.max(heatmap)
+            
+        # Resize to match original image
+        overlay_heatmap = cv2.resize(heatmap, (original_image.width, original_image.height))
+        overlay_heatmap = np.uint8(255 * overlay_heatmap)
+        
+        # Apply colormap (JET)
+        heatmap_img = cv2.applyColorMap(overlay_heatmap, cv2.COLORMAP_JET)
+        heatmap_img = cv2.cvtColor(heatmap_img, cv2.COLOR_BGR2RGB)
+        
+        # Overlay on original image
+        original_np = np.array(original_image)
+        overlay = cv2.addWeighted(original_np, 0.6, heatmap_img, 0.4, 0)
+        
+        return Image.fromarray(overlay), explanation
+    except Exception as e:
+        print(f"[XAI Error] Grad-CAM failed: {e}")
+        return None, "Reasoning visualization unavailable."
+
+# ======================================================
+# IMAGE PREDICTION (ENHANCED WITH ADVANCED FEATURES)
 # ======================================================
 def predict_image(image_path, model, class_names):
     transform = get_transforms(train=False)
@@ -224,15 +307,61 @@ def predict_image(image_path, model, class_names):
         return None
 
     warnings = []
+    advanced_info = {}
     
-    # 1. Quality Check
+    # ========== ADVANCED FEATURE EXTRACTION ==========
+    if ADVANCED_FEATURES_AVAILABLE:
+        try:
+            print("[INFO] Running advanced feature extraction...")
+            feature_data = extract_all_features(image, auto_enhance=True)
+            
+            features = feature_data['features']
+            processed_image = feature_data['processed_image']
+            enhanced_image = feature_data['enhanced_image']
+            landmarks = feature_data['landmarks']
+            metadata = feature_data['metadata']
+            
+            # Calculate quality score
+            quality_score = calculate_image_quality_score(features)
+            
+            # Store advanced info for output
+            advanced_info = {
+                'quality_score': quality_score,
+                'lip_detected': features.get('lip_detected', False),
+                'crack_severity': features.get('crack_severity_score', 0),
+                'color_redness': features.get('redness_ratio', 0),
+                'texture_roughness': features.get('surface_roughness', 0),
+                'landmarks': landmarks
+            }
+            
+            # Quality-based warnings
+            if quality_score < 60:
+                warnings.append(f"Image Quality: {quality_score:.0f}/100")
+            
+            if not features.get('lip_detected'):
+                warnings.append("Lip region not clearly detected")
+            
+            # Use processed (cropped + enhanced) image for prediction
+            image_for_prediction = processed_image
+            
+            print(f"[INFO] Quality Score: {quality_score:.1f}/100")
+            print(f"[INFO] Lip Detected: {features.get('lip_detected')}")
+            print(f"[INFO] Crack Severity: {features.get('crack_severity_score', 0):.1f}")
+            
+        except Exception as e:
+            print(f"[Warning] Advanced features failed: {e}")
+            image_for_prediction = image
+    else:
+        image_for_prediction = image
+    
+    # 1. Quality Check (Original)
     is_good, reason = check_image_quality(image)
     if not is_good:
         print(f"[Warning] Image Quality Issue: {reason}")
         warnings.append(reason)
 
     # 2. Content Relevance Check (Skin Filter)
-    is_relevant, relevance_reason = check_content_relevance(image)
+    is_relevant, relevance_reason = check_content_relevance(image_for_prediction)
     if not is_relevant:
         print(f"[REJECTING] {relevance_reason}")
         # Stop Pipeline Here
@@ -242,15 +371,15 @@ def predict_image(image_path, model, class_names):
         final_image = draw_overlay(image, score, status_display, warnings)
         
         # Save & Return Early
-        os.makedirs("img", exist_ok=True)
+        os.makedirs("img/uploads", exist_ok=True)
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_path = f"img/rejected_{ts}.png"
+        out_path = f"img/uploads/rejected_{ts}.png"
         final_image.save(out_path)
         
-        return status_display, 0, 0.0, get_recommendation("REJECTED", 0), out_path
+        return status_display, 0, 0.0, get_recommendation("REJECTED", 0), out_path, None, "Image rejected due to quality issues", advanced_info
 
     # 3. Inference (Only if relevant)
-    tensor = transform(image).unsqueeze(0).to(DEVICE)
+    tensor = transform(image_for_prediction).unsqueeze(0).to(DEVICE)
     with torch.no_grad():
         outputs = model(tensor)
         probs = F.softmax(outputs, dim=1)
@@ -258,9 +387,20 @@ def predict_image(image_path, model, class_names):
     p_dehydrate = probs[0][0].item()
     p_normal = probs[0][1].item()
     
-    # 4. Robust Logic (Recall-First)
+    # ========== ENHANCED DECISION LOGIC ==========
+    # Combine ML prediction with advanced features
     DEHYDRATION_THRESHOLD = 0.35
     UNCERTAINTY_THRESHOLD = 0.65
+    
+    # Adjust threshold based on advanced features
+    if ADVANCED_FEATURES_AVAILABLE and 'crack_severity' in advanced_info:
+        crack_severity = advanced_info['crack_severity']
+        
+        # If high crack severity detected, boost dehydration confidence
+        if crack_severity > 30:
+            print(f"[INFO] High crack severity ({crack_severity:.1f}) detected - adjusting prediction")
+            p_dehydrate = min(1.0, p_dehydrate + 0.15)  # Boost dehydration probability
+            p_normal = 1.0 - p_dehydrate
 
     if p_dehydrate > DEHYDRATION_THRESHOLD:
         label = "Dehydrate"
@@ -276,14 +416,39 @@ def predict_image(image_path, model, class_names):
         status_display = label
 
     score = calculate_hydration_score(label, confidence)
+    
+    # 🔥 XAI: Generate Heatmap & Explanation
+    heatmap_pil, xai_desc = generate_gradcam_heatmap(model, tensor, class_names.index(label), image_for_prediction)
+    
+    # Enhance XAI description with advanced features
+    if ADVANCED_FEATURES_AVAILABLE and advanced_info:
+        xai_additions = []
+        if advanced_info.get('crack_severity', 0) > 20:
+            xai_additions.append(f"Surface texture analysis detected signs of dryness (severity: {advanced_info['crack_severity']:.0f}/100).")
+        if advanced_info.get('color_redness', 0) > 0.1:
+            xai_additions.append("Color analysis shows increased redness typical of dehydration.")
+        
+        if xai_additions:
+            xai_desc = xai_desc + " " + " ".join(xai_additions)
+    
     final_image = draw_overlay(image, score, status_display, warnings)
     
-    os.makedirs("img", exist_ok=True)
+    os.makedirs("img/uploads", exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_path = f"img/result_{ts}.png"
+    
+    # Save standard result
+    out_path = f"img/uploads/result_{ts}.png"
     final_image.save(out_path)
+    
+    # Save heatmap version
+    xai_path = f"img/uploads/xai_heatmap_{ts}.png"
+    if heatmap_pil:
+        heatmap_pil.save(xai_path)
+    else:
+        xai_path = None
 
-    return status_display, score, confidence, get_recommendation(status_display, confidence), out_path
+    return status_display, score, confidence, get_recommendation(status_display, confidence), out_path, xai_path, xai_desc, advanced_info
+
 
 
 # ======================================================
@@ -300,12 +465,30 @@ def predict_single(image_path):
         except Exception as e:
             return {"error": f"Model load failed: {str(e)}", "confidence": 0, "hydration_score": 0, "prediction": "Error"}
 
-    label, score, conf, rec, saved_path = predict_image(image_path, GLOBAL_MODEL, GLOBAL_CLASSES)
+    result = predict_image(image_path, GLOBAL_MODEL, GLOBAL_CLASSES)
+    
+    # Handle both old and new return formats
+    if len(result) == 8:
+        label, score, conf, rec, saved_path, xai_path, xai_desc, advanced_info = result
+    else:
+        # Fallback for old format
+        label, score, conf, rec, saved_path = result[:5]
+        xai_path = result[5] if len(result) > 5 else None
+        xai_desc = result[6] if len(result) > 6 else "No description"
+        advanced_info = {}
     
     return {
         "prediction": label,
         "hydration_score": score,
         "confidence": float(conf),
         "saved_image_path": saved_path,
-        "recommendation": rec
+        "xai_heatmap_path": xai_path,
+        "xai_description": xai_desc,
+        "recommendation": rec,
+        "advanced_analysis": {
+            "quality_score": advanced_info.get('quality_score', None),
+            "lip_detected": advanced_info.get('lip_detected', None),
+            "crack_severity": advanced_info.get('crack_severity', None),
+            "texture_roughness": advanced_info.get('texture_roughness', None)
+        }
     }

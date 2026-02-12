@@ -1,7 +1,9 @@
 // lib/screens/hydration/combined_result_screen.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../services/auth_service.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
+import 'xai_explanation_widget.dart';
 
 class CombinedResultScreen extends StatelessWidget {
   final Map<String, dynamic> formResult;
@@ -131,15 +133,34 @@ class CombinedResultScreen extends StatelessWidget {
                   // METRIC 2: LIP SCORE (IMAGE)
                   // ===============================
                   if (hasLip)
-                    _buildBigMetricCard(
-                      title: "LIP HYDRATION SCORE",
-                      value: "$lipScore / 100",
-                      subtitle: "Status: $lipStatus",
-                      icon: Icons.face_retouching_natural,
-                      color: lipScore > 75 ? Colors.greenAccent : Colors.orangeAccent,
+                    Column(
+                      children: [
+                        _buildBigMetricCard(
+                          title: "LIP HYDRATION SCORE",
+                          value: "$lipScore / 100",
+                          subtitle: "Status: $lipStatus",
+                          icon: Icons.face_retouching_natural,
+                          color: lipScore > 75 ? Colors.greenAccent : Colors.orangeAccent,
+                        ),
+                        if (lipResult!.containsKey('xai_url') && lipResult!['xai_url'] != null) ...[
+                          const SizedBox(height: 16),
+                          XaiExplanationWidget(
+                            heatmapUrl: lipResult!['xai_url'],
+                            description: lipResult!['xai_description'],
+                          ),
+                        ],
+                      ],
                     )
                   else
                     _buildMissingDataCard("Lip Scan Data Missing", Colors.orangeAccent),
+
+                  // ===============================
+                  // NEW: AI REASONING (FORM)
+                  // ===============================
+                  if (hasForm && formResult.containsKey('ai_reasoning')) ...[
+                    const SizedBox(height: 30),
+                    _buildAiReasoningCard(formResult['ai_reasoning']),
+                  ],
 
                   const SizedBox(height: 50),
 
@@ -221,6 +242,62 @@ class CombinedResultScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildAiReasoningCard(dynamic reasoning) {
+    List<String> factors = [];
+    if (reasoning is List) {
+      factors = reasoning.map((e) => e.toString()).toList();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.psychology_outlined, color: Colors.cyanAccent, size: 20),
+              const SizedBox(width: 12),
+              Text(
+                "AI REASONING",
+                style: GoogleFonts.orbitron(
+                  color: Colors.cyanAccent, 
+                  fontSize: 14, 
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (factors.isEmpty)
+             Text("No specific reasoning available.", style: GoogleFonts.exo2(color: Colors.white60))
+          else
+            Column(
+              children: factors.map((f) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("• ", style: TextStyle(color: Colors.cyanAccent, fontSize: 18)),
+                    Expanded(
+                      child: Text(f, style: GoogleFonts.exo2(color: Colors.white70, fontSize: 13)),
+                    ),
+                  ],
+                ),
+              )).toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
+
 
   Widget _buildMissingDataCard(String text, Color color) {
     return Container(

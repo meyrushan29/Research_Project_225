@@ -35,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         
         if (mounted) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
@@ -86,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         
         if (mounted) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Row(
