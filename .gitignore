@@ -1,0 +1,42 @@
+# Flutter / Dart build outputs
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/pubspec.lock
+
+# Android build artifacts
+**/.gradle/
+**/android/.gradle/
+**/android/app/build/
+**/android/local.properties
+**/*.apk
+**/*.aab
+**/*.dex
+**/*.class
+
+# iOS build artifacts
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+
+# Python bytecode
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Environment files
+.env
+*.env
+
+# IDE / Editor
+.idea/
+.vscode/
+*.suo
+*.user
+*.userosscache
+
+# Logs
+*.log
