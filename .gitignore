@@ -1,4 +1,24 @@
-# Flutter / Dart build outputs
+# =============================================
+# GitHub Ignore Rules — Research_Project_225
+# =============================================
+
+# Large files (GitHub 100MB limit)
+**/img/fitness_processed/
+**/*.mp4
+**/*.mp44
+**/*.pkl
+**/*.joblib
+**/*.model
+**/*.h5
+**/*.weights
+
+# Large dataset files
+**/*.csv
+**/dataset/
+**/data/raw/
+**/Mental-H/Emotional/
+
+# ── Flutter / Dart ──────────────────────────
 **/build/
 **/.dart_tool/
 **/.flutter-plugins
@@ -21,22 +41,40 @@
 **/ios/Flutter/Generated.xcconfig
 **/ios/Flutter/flutter_export_environment.sh
 
-# Python bytecode
+# ── Python ──────────────────────────────────
 **/__pycache__/
 **/*.pyc
 **/*.pyo
 **/*.pyd
+**/.pytest_cache/
+**/.venv/
+**/venv/
+**/env/
 
-# Environment files
-.env
-*.env
+# SQLite databases
+**/*.db
+**/*.sqlite
+**/*.sqlite3
 
-# IDE / Editor
-.idea/
-.vscode/
+# Temp & scratch directories
+**/temp/
+**/temp_data/
+**/tmp/
+**/uploads/
+**/logs/
+
+# Log and output files
+*.log
+*.txt
+
+# ── IDE / Editor ─────────────────────────────
+**/.idea/
+**/.vscode/
 *.suo
 *.user
 *.userosscache
 
-# Logs
-*.log
+# ── Environment files ────────────────────────
+.env
+*.env
+**/.env
