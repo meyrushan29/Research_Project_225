@@ -6,6 +6,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_application_1/services/api_service.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
+import 'package:dio/dio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'fitness_xai_widget.dart';
 
 class ResultScreen extends StatefulWidget {
   final PlatformFile videoFile;
@@ -53,28 +57,46 @@ class _ResultScreenState extends State<ResultScreen> {
     _loadVideo(_normalVideoUrl);
   }
 
-  void _loadVideo(String? url) {
+  void _loadVideo(String? url) async {
     if (url == null) return;
 
+    // 1. Remove the old controller from the UI immediately to prevent using a disposed controller
     final oldController = _videoController;
-    if (oldController != null) {
-      oldController.pause();
+    if (mounted) {
+      setState(() {
+        _videoController = null;
+      });
     }
 
-    _videoController = VideoPlayerController.networkUrl(Uri.parse(url))
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {});
-          _videoController?.play();
-          _videoController?.setLooping(true);
-          
-          if (oldController != null && oldController.value.isInitialized) {
-             _videoController?.seekTo(oldController.value.position);
-          }
-        }
-      }).catchError((e) {
-        debugPrint("Video initialization failed: $e");
-      });
+    // 2. Dispose previous controller safely
+    if (oldController != null) {
+      await oldController.dispose();
+    }
+
+    if (!mounted) return;
+
+    // 3. Initialize new controller
+    final newController = VideoPlayerController.networkUrl(Uri.parse(url));
+    
+    try {
+      await newController.initialize();
+      if (mounted) {
+        setState(() {
+          _videoController = newController;
+        });
+        await _videoController?.play();
+        await _videoController?.setLooping(true);
+      } else {
+        await newController.dispose();
+      }
+    } catch (e) {
+      debugPrint("Video initialization failed: $e");
+      if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to play video: $e"), backgroundColor: Colors.red)
+         );
+      }
+    }
   }
 
   @override
@@ -104,6 +126,10 @@ class _ResultScreenState extends State<ResultScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.download, color: Colors.purpleAccent),
+            onPressed: () => _downloadVideo(),
+          ),
           IconButton(
             icon: const Icon(Icons.share, color: Colors.cyanAccent),
             onPressed: () {
@@ -144,11 +170,26 @@ class _ResultScreenState extends State<ResultScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 10),
+                  // FIX: Show low-confidence warning banner
+                  if (_isLowConfidence()) _buildConfidenceWarning(),
+                  // FIX: Show accuracy warning for new users
+                  if (widget.analysisResult.containsKey('accuracy_warning') && widget.analysisResult['accuracy_warning'] != null)
+                    _buildAccuracyWarning(widget.analysisResult['accuracy_warning']),
                   _buildVideoSection(),
+                  const SizedBox(height: 12),
+                  if (widget.analysisResult.containsKey('lighting_message') && widget.analysisResult['lighting_message'] != null)
+                    _buildLightingMessage(widget.analysisResult['lighting_message']),
                   const SizedBox(height: 24),
                   _buildQuickStats(),
                   const SizedBox(height: 24),
                   _buildDetailedAnalysis(),
+                  const SizedBox(height: 24),
+                  // XAI Form Analysis Section
+                  FitnessXaiWidget(
+                    xaiExplanation: widget.analysisResult['xai_explanation'] as Map<String, dynamic>?,
+                    jointImportance: (widget.analysisResult['joint_importance'] as Map?)?.cast<String, dynamic>(),
+                    perRepTimeline: widget.analysisResult['per_rep_timeline'] as List?,
+                  ),
                   const SizedBox(height: 24),
                   _buildRecommendations(),
                 ],
@@ -166,7 +207,8 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
         child: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.of(context).popUntil((route) => route.isFirst);
+            // ProcessingScreen used pushReplacement, so we only need to pop once to go back to Home
+            Navigator.of(context).pop(); 
           },
           icon: const Icon(Icons.refresh, color: Colors.black),
           label: Text(
@@ -179,6 +221,219 @@ class _ResultScreenState extends State<ResultScreen> {
           backgroundColor: Colors.cyanAccent,
           elevation: 0,
         ),
+      ),
+    );
+  }
+
+  Future<void> _downloadVideo() async {
+    final url = _heatmapEnabled ? _heatmapVideoUrl : _normalVideoUrl;
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No video available to download.')),
+      );
+      return;
+    }
+
+    try {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Downloading video...'), duration: Duration(seconds: 1)),
+      );
+
+      // Find the appropriate directory to save
+      Directory? directory;
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          directory = await getExternalStorageDirectory();
+        }
+      } else {
+        directory = await getApplicationDocumentsDirectory();
+      }
+
+      if (directory == null) throw Exception("Could not access storage directory.");
+
+      final String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
+      final String savePath = '${directory.path}/workout_analysis_$timeStamp.mp4';
+
+      final dio = Dio();
+      await dio.download(url, savePath);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Video saved to Downloads!\n$savePath', style: const TextStyle(fontSize: 12)),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to download: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  // FIX: Check if confidence is low
+  bool _isLowConfidence() {
+    final level = widget.analysisResult['confidence_level'] ?? '';
+    final confidence = (widget.analysisResult['confidence'] as num?)?.toDouble() ?? 0;
+    return level == 'low' || confidence < 45;
+  }
+
+  // FIX: Format exercise name nicely (e.g. "barbell_biceps_curl" -> "Barbell Biceps Curl")
+  String _formatExerciseName(String? name) {
+    if (name == null || name.isEmpty || name == 'unknown') return 'Unknown';
+    // Strip accidental _correct / _wrong suffix if full label slipped through
+    String cleaned = name;
+    if (cleaned.endsWith('_correct')) cleaned = cleaned.substring(0, cleaned.length - 8);
+    if (cleaned.endsWith('_wrong'))   cleaned = cleaned.substring(0, cleaned.length - 6);
+    return cleaned
+        .split('_')
+        .map((word) => word.isNotEmpty ? '${word[0].toUpperCase()}${word.substring(1)}' : '')
+        .join(' ');
+  }
+
+  // FIX: Format form label nicely  
+  String _formatFormLabel(String? form) {
+    if (form == null || form.isEmpty || form == 'unknown') return 'N/A';
+    if (form == 'correct') return 'Good Form';
+    if (form == 'wrong') return 'Needs Work';
+    return form[0].toUpperCase() + form.substring(1);
+  }
+
+  // FIX: Get form color
+  Color _getFormColor(String? form) {
+    if (form == 'correct') return Colors.greenAccent;
+    if (form == 'wrong') return Colors.redAccent;
+    return Colors.orangeAccent;
+  }
+
+  Widget _buildAccuracyWarning(String message) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.purpleAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline_rounded, color: Colors.purpleAccent, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Analysis Warning',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.purpleAccent,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: GoogleFonts.exo2(
+                    fontSize: 12,
+                    color: Colors.white70,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLightingMessage(String message) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.cyanAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.wb_sunny_rounded, color: Colors.cyanAccent, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Lighting Enhanced',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.cyanAccent,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: GoogleFonts.exo2(
+                    fontSize: 12,
+                    color: Colors.white70,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConfidenceWarning() {
+    final confidence = (widget.analysisResult['confidence'] as num?)?.toDouble() ?? 0;
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.orangeAccent.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Low Confidence (${confidence.toStringAsFixed(1)}%)',
+                  style: GoogleFonts.orbitron(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orangeAccent,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'The AI had difficulty analyzing this video. Try better lighting, a clearer angle, or a steadier camera for more accurate results.',
+                  style: GoogleFonts.exo2(
+                    fontSize: 12,
+                    color: Colors.white70,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -199,15 +454,14 @@ class _ResultScreenState extends State<ResultScreen> {
         child: Column(
           children: [
             AspectRatio(
-              aspectRatio: 16 / 9,
+              aspectRatio: (_videoController != null && _videoController!.value.isInitialized)
+                  ? _videoController!.value.aspectRatio
+                  : 16 / 9,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  if (_videoController != null && _videoController!.value.isInitialized)
-                    AspectRatio(
-                      aspectRatio: _videoController!.value.aspectRatio,
-                      child: VideoPlayer(_videoController!),
-                    )
+                   if (_videoController != null && _videoController!.value.isInitialized)
+                    VideoPlayer(_videoController!)
                   else
                     Container(
                       color: Colors.black,
@@ -288,25 +542,27 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Widget _buildQuickStats() {
+    final form = widget.analysisResult['form'] as String? ?? 'unknown';
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Expanded(
             child: _buildStatCard(
-              icon: Icons.fitness_center,
+              icon: Icons.accessibility_new_rounded,
               label: 'EXERCISE',
-              value: widget.analysisResult['exercise'] ?? 'Unknown',
+              value: _formatExerciseName(widget.analysisResult['exercise'] as String?),
               color: Colors.cyanAccent,
             ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: _buildStatCard(
-              icon: Icons.check_circle,
+              icon: form == 'correct' ? Icons.check_circle : 
+                    form == 'wrong' ? Icons.cancel : Icons.help_outline,
               label: 'FORM SCORE',
-              value: widget.analysisResult['form'] ?? 'N/A',
-              color: Colors.purpleAccent,
+              value: _formatFormLabel(form),
+              color: _getFormColor(form),
             ),
           ),
         ],
@@ -370,19 +626,51 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Widget _buildDetailedAnalysis() {
+    final repsCorrect = widget.analysisResult['reps_correct'] ?? 0;
+    final repsWrong = widget.analysisResult['reps_wrong'] ?? 0;
+    final totalReps = (widget.analysisResult['reps'] ?? 0);
+    
+    // Calculate percentage if reps exist
+    double correctPct = 0;
+    if (repsCorrect + repsWrong > 0) {
+       correctPct = (repsCorrect / (repsCorrect + repsWrong)) * 100;
+    } else if (totalReps > 0) {
+       // Fallback if detailed stats missing but reps exist
+       correctPct = widget.analysisResult['form'] == 'correct' ? 100 : 0;
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'DETAILED METRICS',
-            style: GoogleFonts.orbitron(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              letterSpacing: 1
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'DETAILED METRICS',
+                style: GoogleFonts.orbitron(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1
+                ),
+              ),
+              // Past Results Button
+              TextButton.icon(
+                onPressed: () {
+                   // TODO: Navigate to full history page
+                   ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Past Video Results Page coming soon!', style: GoogleFonts.exo2(color: Colors.white)),
+                        backgroundColor: Colors.purpleAccent.withValues(alpha: 0.5),
+                      )
+                   );
+                },
+                icon: const Icon(Icons.history, color: Colors.purpleAccent, size: 16),
+                label: Text("HISTORY", style: GoogleFonts.orbitron(color: Colors.purpleAccent, fontSize: 12)),
+              )
+            ],
           ),
           const SizedBox(height: 16),
           _buildGlassContainer(
@@ -397,10 +685,21 @@ class _ResultScreenState extends State<ResultScreen> {
                 Divider(color: Colors.white.withValues(alpha: 0.1)),
                 _buildMetricRow(
                   'Repetition Count',
-                  '${widget.analysisResult['reps'] ?? 0}',
+                  '$totalReps',
                   Icons.repeat,
                   Colors.greenAccent,
                 ),
+                // Show breakdown if available
+                if (repsCorrect > 0 || repsWrong > 0) ...[
+                   Divider(color: Colors.white.withValues(alpha: 0.1)),
+                   Row(
+                     children: [
+                       Expanded(child: _buildMetricRow('Correct Reps', '$repsCorrect', Icons.check_circle_outline, Colors.green)),
+                       Container(width: 1, height: 40, color: Colors.white10),
+                       Expanded(child: _buildMetricRow('Wrong Reps', '$repsWrong', Icons.cancel_outlined, Colors.red)),
+                     ],
+                   )
+                ],
                 Divider(color: Colors.white.withValues(alpha: 0.1)),
                 _buildMetricRow(
                   'Hold Duration',
@@ -411,8 +710,121 @@ class _ResultScreenState extends State<ResultScreen> {
               ],
             ),
           ),
+          
+          _buildAnalysisTable(correctPct),
         ],
       ),
+    );
+  }
+
+  Widget _buildAnalysisTable(double correctPct) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'PERFORMANCE ANALYSIS',
+          style: GoogleFonts.orbitron(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          child: Table(
+            columnWidths: const {
+              0: FlexColumnWidth(2), 
+              1: FlexColumnWidth(1), 
+              2: FlexColumnWidth(1),
+              3: FlexColumnWidth(1.2)
+            },
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+            children: [
+              // Header
+              TableRow(
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.05)),
+                children: [
+                  _buildTableHeader("Metric"),
+                  _buildTableHeader("Value"),
+                  _buildTableHeader("Trend"),
+                  _buildTableHeader("Status"),
+                ]
+              ),
+              // Correct %
+              _buildTableRow(
+                "Accuracy", 
+                "${correctPct.toStringAsFixed(0)}%", 
+                Icons.trending_up, 
+                Colors.greenAccent,
+                correctPct > 80 ? "Excellent" : (correctPct > 50 ? "Good" : "Poor")
+              ),
+              // Wrong %
+              _buildTableRow(
+                "Error Rate", 
+                "${(100 - correctPct).toStringAsFixed(0)}%", 
+                Icons.trending_down, 
+                Colors.redAccent,
+                (100 - correctPct) < 20 ? "Low" : "High"
+              ),
+              // Intensity (Mock)
+              _buildTableRow(
+                "Intensity", 
+                "High", 
+                Icons.bolt, 
+                Colors.orangeAccent,
+                "Optimal"
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTableHeader(String text) {
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: Text(text, style: GoogleFonts.exo2(color: Colors.white54, fontSize: 12, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  TableRow _buildTableRow(String metric, String value, IconData trendIcon, Color color, String status) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Text(metric, style: GoogleFonts.exo2(color: Colors.white, fontWeight: FontWeight.w500)),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Text(value, style: GoogleFonts.orbitron(color: Colors.white, fontWeight: FontWeight.bold)),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Icon(trendIcon, color: color, size: 18),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Container(
+             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+             decoration: BoxDecoration(
+               color: color.withValues(alpha: 0.2),
+               borderRadius: BorderRadius.circular(8),
+               border: Border.all(color: color.withValues(alpha: 0.5), width: 0.5)
+             ),
+             child: Text(status, 
+               textAlign: TextAlign.center,
+               style: GoogleFonts.exo2(color: color, fontSize: 10, fontWeight: FontWeight.bold)
+             ),
+          ),
+        ),
+      ]
     );
   }
 
@@ -473,6 +885,19 @@ class _ResultScreenState extends State<ResultScreen> {
   Widget _buildRecommendations() {
     final List<dynamic> rawRecs = widget.analysisResult['recommendations'] ?? [];
     final recommendations = rawRecs.map((e) => e.toString()).toList();
+    
+    // Check for personalized body part recommendation
+    final String? specificRec = widget.analysisResult['recommendation'];
+    if (specificRec != null && specificRec.isNotEmpty) {
+       // Insert at the top
+       recommendations.insert(0, specificRec);
+    } else {
+       // Check inside details/advanced_metrics if not at root
+       final details = widget.analysisResult['advanced_metrics'];
+       if (details is Map && details['recommendation'] != null) {
+          recommendations.insert(0, details['recommendation'].toString());
+       }
+    }
     
     if (recommendations.isEmpty) {
         recommendations.add("Great form! Keep executing consistently.");

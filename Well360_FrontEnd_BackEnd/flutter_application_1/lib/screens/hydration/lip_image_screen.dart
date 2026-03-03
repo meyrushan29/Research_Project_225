@@ -69,6 +69,23 @@ class _LipImageScreenState extends State<LipImageScreen> {
     setState(() => loading = true);
 
     try {
+      // Pre-check: backend reachable and lip model available
+      final backendOk = await ApiService.checkHydrationBackend();
+      if (!backendOk && mounted) {
+        setState(() => loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Backend not reachable. Start it first: double-click START_BACKEND.bat in the project folder (or run 'python run.py' from Final_Backend) and keep that window open. Then check URL in Settings (gear icon).",
+              style: GoogleFonts.exo2(),
+            ),
+            backgroundColor: Colors.orange.shade800,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
       final result = await ApiService.predictLip(
         imageFile: image, // Now XFile
         webImage: displayBytes,
@@ -93,7 +110,8 @@ class _LipImageScreenState extends State<LipImageScreen> {
           recommendation,
           "AI Confidence: ${confidence.toStringAsFixed(1)}%",
           if (prediction == "Dehydrate") "Consider drinking water immediately."
-        ]
+        ],
+        "personalized_suggestions": result['personalized_suggestions'] ?? [], // NEW: Database-driven suggestions
       };
 
       // SAVE TO SERVICE
@@ -117,7 +135,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Analysis failed: $e", style: GoogleFonts.exo2()),
-          backgroundColor: Colors.redAccent.withValues(alpha: 0.5),
+          backgroundColor: Colors.redAccent.withOpacity(0.5),
         ),
       );
     } finally {
@@ -244,9 +262,9 @@ class _LipImageScreenState extends State<LipImageScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: Colors.white.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(24),
-                            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                            border: Border.all(color: Colors.white.withOpacity(0.1)),
                           ),
                           child: Column(
                             children: [
@@ -286,10 +304,10 @@ class _LipImageScreenState extends State<LipImageScreen> {
                     decoration: BoxDecoration(
                       color: Colors.black,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                      border: Border.all(color: Colors.white.withOpacity(0.1)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.cyanAccent.withValues(alpha: 0.1),
+                          color: Colors.cyanAccent.withOpacity(0.1),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
@@ -347,7 +365,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
           right: 16,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.6),
+              color: Colors.black.withOpacity(0.6),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: Colors.greenAccent),
             ),
@@ -383,7 +401,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
           Icon(
             Icons.add_a_photo_outlined,
             size: 64,
-            color: Colors.white.withValues(alpha: 0.1),
+            color: Colors.white.withOpacity(0.1),
           ),
           const SizedBox(height: 16),
           Text(
@@ -408,9 +426,9 @@ class _LipImageScreenState extends State<LipImageScreen> {
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Colors.white.withOpacity(0.05),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.blueAccent.withValues(alpha: 0.2)),
+            border: Border.all(color: Colors.blueAccent.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,7 +465,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Icon(Icons.check, size: 14, color: Colors.white.withValues(alpha: 0.3)),
+          Icon(Icons.check, size: 14, color: Colors.white.withOpacity(0.3)),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -494,7 +512,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: isOutlined ? [] : [
-           BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 1)
+           BoxShadow(color: color.withOpacity(0.2), blurRadius: 20, spreadRadius: 1)
         ]
       ),
       child: ElevatedButton(
@@ -505,7 +523,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: isOutlined ? BorderSide(color: color.withValues(alpha: 0.5), width: 1) : BorderSide.none
+            side: isOutlined ? BorderSide(color: color.withOpacity(0.5), width: 1) : BorderSide.none
           ),
         ),
         child: Row(
@@ -530,7 +548,7 @@ class _LipImageScreenState extends State<LipImageScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-           BoxShadow(color: Colors.greenAccent.withValues(alpha: 0.2), blurRadius: 20, spreadRadius: 1)
+           BoxShadow(color: Colors.greenAccent.withOpacity(0.2), blurRadius: 20, spreadRadius: 1)
         ]
       ),
       child: ElevatedButton(
@@ -591,13 +609,13 @@ class _LipImageScreenState extends State<LipImageScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
+        color: Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Colors.cyanAccent.withValues(alpha: 0.1), Colors.transparent],
+          colors: [Colors.cyanAccent.withOpacity(0.1), Colors.transparent],
         ),
       ),
       child: Column(
@@ -635,14 +653,14 @@ class _LipImageScreenState extends State<LipImageScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
+        color: Colors.white.withOpacity(0.03),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
           Container(
             width: 28, height: 28,
-            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.cyanAccent.withValues(alpha: 0.2)),
+            decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.cyanAccent.withOpacity(0.2)),
             child: Center(child: Text(step, style: const TextStyle(color: Colors.cyanAccent, fontSize: 12, fontWeight: FontWeight.bold))),
           ),
           const SizedBox(width: 16),

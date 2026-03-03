@@ -1,9 +1,11 @@
 // lib/screens/mentalHealth/video/camera_screen.dart
+import 'dart:convert';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 import 'stress_graph_screen.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -19,6 +21,9 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
   String? _errorMessage;
   String _detectedEmotion = '';
   double _confidence = 0.0;
+  bool _isProcessing = false;
+  int _framesAnalyzed = 0;
+  final List<String> _emotionHistory = [];
   
   Timer? _analysisTimer;
   late AnimationController _scanController;
@@ -34,15 +39,43 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
   }
 
   void _startAnalysis() {
-    _analysisTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (mounted) {
-        setState(() {
-          final emotions = ['Happy', 'Neutral', 'Focused', 'Calm', 'Surprised'];
-          _detectedEmotion = emotions[timer.tick % emotions.length];
-          _confidence = 0.75 + (timer.tick % 5) * 0.05;
-        });
+    _analysisTimer = Timer.periodic(const Duration(seconds: 4), (timer) async {
+      if (mounted && !_isProcessing && _controller != null && _controller!.value.isInitialized) {
+        await _captureAndAnalyze();
       }
     });
+  }
+
+  Future<void> _captureAndAnalyze() async {
+    if (_isProcessing) return;
+    
+    setState(() => _isProcessing = true);
+    
+    try {
+      // Capture image from camera
+      final XFile image = await _controller!.takePicture();
+      final bytes = await image.readAsBytes();
+      final base64Image = base64Encode(bytes);
+      
+      // Send to backend for analysis
+      final result = await ApiService.predictFaceEmotion(base64Image);
+      
+      if (mounted) {
+        setState(() {
+          _detectedEmotion = result['emotion'] ?? 'Unknown';
+          _confidence = (result['confidence'] ?? 0.0).toDouble();
+          _framesAnalyzed++;
+          _emotionHistory.add(_detectedEmotion);
+          _isProcessing = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        // Don't show error for each frame, just update UI
+        debugPrint('Frame analysis error: $e');
+      }
+    }
   }
 
   Future<void> _initializeCamera() async {
@@ -62,7 +95,7 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
 
       _controller = CameraController(
         camera,
-        ResolutionPreset.veryHigh,
+        ResolutionPreset.medium,
         enableAudio: false,
       );
 
@@ -79,6 +112,46 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
           _errorMessage = 'Failed to initialize camera: ${e.toString()}';
         });
       }
+    }
+  }
+
+  Color _getEmotionColor(String emotion) {
+    switch (emotion.toLowerCase()) {
+      case 'happy':
+        return Colors.greenAccent;
+      case 'sad':
+        return Colors.blueAccent;
+      case 'angry':
+        return Colors.redAccent;
+      case 'fear':
+        return Colors.purpleAccent;
+      case 'surprise':
+        return Colors.orangeAccent;
+      case 'disgust':
+        return Colors.tealAccent;
+      case 'neutral':
+      default:
+        return Colors.cyanAccent;
+    }
+  }
+
+  IconData _getEmotionIcon(String emotion) {
+    switch (emotion.toLowerCase()) {
+      case 'happy':
+        return Icons.sentiment_very_satisfied;
+      case 'sad':
+        return Icons.sentiment_dissatisfied;
+      case 'angry':
+        return Icons.mood_bad;
+      case 'fear':
+        return Icons.sentiment_neutral;
+      case 'surprise':
+        return Icons.sentiment_satisfied;
+      case 'disgust':
+        return Icons.sick_outlined;
+      case 'neutral':
+      default:
+        return Icons.emoji_emotions_outlined;
     }
   }
 
@@ -114,6 +187,38 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
                painter: _FaceScannerPainter(_scanController),
              ),
           ),
+
+          // Processing indicator
+          if (_isProcessing)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 70,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 12, height: 12,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.cyanAccent.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'SCANNING',
+                      style: GoogleFonts.exo2(fontSize: 9, color: Colors.cyanAccent, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
           // Top Bar Overlay
           _buildTopBar(),
@@ -251,6 +356,20 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
                     'LIVE ANALYSIS',
                     style: GoogleFonts.orbitron(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1),
                   ),
+                  if (_framesAnalyzed > 0) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.cyanAccent.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$_framesAnalyzed',
+                        style: GoogleFonts.exo2(fontSize: 10, color: Colors.cyanAccent, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -262,6 +381,9 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
   }
 
   Widget _buildEmotionDisplay() {
+    final emotionColor = _getEmotionColor(_detectedEmotion);
+    final emotionIcon = _getEmotionIcon(_detectedEmotion);
+
     return Positioned(
       top: MediaQuery.of(context).padding.top + 80,
       left: 0,
@@ -276,12 +398,12 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
               decoration: BoxDecoration(
                 color: Colors.black45,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+                border: Border.all(color: emotionColor.withValues(alpha: 0.3)),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.emoji_emotions_outlined, color: Colors.cyanAccent, size: 24),
+                  Icon(emotionIcon, color: emotionColor, size: 24),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,7 +415,7 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
                       ),
                       Text(
                         '${(_confidence * 100).toStringAsFixed(0)}% CONFIDENCE',
-                        style: GoogleFonts.exo2(fontSize: 10, color: Colors.cyanAccent),
+                        style: GoogleFonts.exo2(fontSize: 10, color: emotionColor),
                       ),
                     ],
                   ),
@@ -336,18 +458,18 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
             ),
             _buildControlButton(
               icon: Icons.analytics_outlined,
-              label: 'STATS',
+              label: 'STRESS',
               color: Colors.purpleAccent,
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => const StressGraphScreen()));
               },
             ),
             _buildControlButton(
-              icon: Icons.map,
-              label: 'MAP',
-              color: Colors.greenAccent,
+              icon: Icons.camera,
+              label: 'SNAP',
+              color: Colors.cyanAccent,
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Map View coming soon!', style: GoogleFonts.exo2()), backgroundColor: Colors.black87));
+                _captureAndAnalyze();
               },
             ),
           ],

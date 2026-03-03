@@ -2,7 +2,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -27,7 +26,6 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
   double _minExposure = 0.0;
   double _maxExposure = 0.0;
   bool _isFlashOn = false;
-  bool _showQualityWarning = false;
 
   @override
   void initState() {
@@ -163,7 +161,7 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
       final int h = originalImage.height;
       
       // Calculate Crop to match the UI Overlay (80% width, 0.45 aspect ratio)
-      final double overlayWidthFactor = 0.8; 
+      const double overlayWidthFactor = 0.8; 
       
       final int cropW = (w * overlayWidthFactor).toInt();
       final int cropH = (cropW * 0.45).toInt(); 
@@ -247,9 +245,6 @@ class _CameraScreenState extends State<CameraScreen> with SingleTickerProviderSt
     try {
       _controller!.setFocusPoint(offset);
       _controller!.setExposurePoint(offset);
-      
-      // Show focus indicator
-      setState(() => _showQualityWarning = false);
     } catch (_) {}
   }
   

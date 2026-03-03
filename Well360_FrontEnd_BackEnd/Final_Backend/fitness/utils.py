@@ -17,7 +17,8 @@ def normalize_exercise_name(name):
 # UI
 # ======================================================
 def create_compact_info_panel(width, exercise, form, confidence, stage, colors,
-                              reps=0, hold_time=0, show_heatmap=True, frame_count=0):
+                               reps=0, hold_time=0, show_heatmap=True, frame_count=0,
+                               last_rep_status="unknown", reps_correct=0, reps_wrong=0):
 
     panel = np.zeros((90, width, 3), dtype=np.uint8)
 
@@ -34,14 +35,29 @@ def create_compact_info_panel(width, exercise, form, confidence, stage, colors,
 
     if exercise == "plank":
         rep_text = f"HOLD: {hold_time}s"
+        # No correct/wrong for plank yet (unless form check implies hold quality)
+        cv2.putText(panel, rep_text,
+                    (width // 2 - 70, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
     else:
+        # Draw status box for last rep
+        box_color = (50, 50, 50)
+        if last_rep_status == "correct":
+            box_color = (0, 200, 0) # Green
+        elif last_rep_status == "wrong":
+            box_color = (0, 0, 200) # Red
+        
+        cv2.rectangle(panel, (width // 2 - 80, 10), (width // 2 + 80, 60), box_color, -1)
+        
         rep_text = f"REPS: {reps}"
+        cv2.putText(panel, rep_text,
+                    (width // 2 - 50, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+                    
+        # Show stats
+        stats_text = f"C: {reps_correct} | W: {reps_wrong}"
+        cv2.putText(panel, stats_text,
+                    (width // 2 - 60, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 1)
 
-    cv2.putText(panel, rep_text,
-                (width // 2 - 70, 45), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
-    cv2.putText(panel, f"Confidence: {confidence:.1f}%",
-                (width - 260, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
 
     heatmap_status = "ON" if show_heatmap else "OFF"
     cv2.putText(panel, f"Heatmap: {heatmap_status} | Frame: {frame_count}",
@@ -124,11 +140,41 @@ def find_video_files():
     return files
 
 def load_recommendations(json_file="recommendations.json"):
+    import sqlite3
+    import os
+    import json
+    
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    db_path = os.path.join(base_dir, "hydration", "hydration_app.db")
+    
+    recs = {}
     try:
-        with open(json_file, "r") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+        conn = sqlite3.connect(db_path)
+        c = conn.cursor()
+        c.execute("SELECT name, correct_tips, wrong_tips FROM exercise_metadata")
+        for row in c.fetchall():
+            name, correct, wrong = row
+            snake_name = name.replace(" ", "_") if name else "unknown"
+            
+            try:
+                correct_list = json.loads(correct) if correct else []
+            except Exception:
+                correct_list = []
+                
+            try:
+                wrong_list = json.loads(wrong) if wrong else []
+            except Exception:
+                wrong_list = []
+                
+            recs[snake_name] = {
+                "correct": correct_list,
+                "wrong": wrong_list
+            }
+        conn.close()
+    except Exception as e:
+        print(f"Error loading recommendations from DB: {e}")
+        
+    return recs
 
 def save_detailed_report_with_recommendations(*args, **kwargs):
     return

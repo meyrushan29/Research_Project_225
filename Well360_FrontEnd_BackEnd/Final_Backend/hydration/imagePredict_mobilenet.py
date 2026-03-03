@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 # ======================================================
-# DEPENDENCY HANDLING
+# DEPENDENCIES
 # ======================================================
 try:
     import torch
@@ -12,447 +12,339 @@ try:
     import torch.nn.functional as F
     from torchvision import models
     from PIL import Image, ImageDraw, ImageFont, ImageStat
-    import matplotlib.pyplot as plt
     import numpy as np
     import cv2
     from captum.attr import LayerGradCam
 except ImportError as e:
-    print(f"[CRITICAL ERROR] Missing Dependency: {e}")
+    print(f"[CRITICAL] Missing: {e}")
 
 from core.config import DEVICE, MOBILENET_MODEL_OUT
-from hydration.preprocess_images import get_transforms
-
-# Import new advanced feature extraction
-try:
-    from hydration.lip_feature_extractor import (
-        extract_all_features,
-        calculate_image_quality_score
-    )
-    ADVANCED_FEATURES_AVAILABLE = True
-except ImportError as e:
-    print(f"[Warning] Advanced features not available: {e}")
-    ADVANCED_FEATURES_AVAILABLE = False
+from hydration.training.preprocess_images import get_transforms
 
 
 # ======================================================
-# QUALITY CHECKS
+# STEP 1 — DETECT & CROP LIP SHAPE
+# ======================================================
+LIP_OUTER = [61, 146, 91, 181, 84, 17, 314, 405, 321, 375, 291,
+             409, 270, 269, 267, 0, 37, 39, 40, 185]
+
+def _detect_lip_mediapipe(image_rgb_np):
+    """Try lip detection using MediaPipe face mesh. Works on full face photos."""
+    try:
+        import mediapipe as mp
+        h, w = image_rgb_np.shape[:2]
+        face_mesh = mp.solutions.face_mesh.FaceMesh(
+            static_image_mode=True, max_num_faces=1,
+            refine_landmarks=True, min_detection_confidence=0.3
+        )
+        res = face_mesh.process(image_rgb_np)
+        face_mesh.close()
+
+        if not res.multi_face_landmarks:
+            return None, False
+
+        lm = res.multi_face_landmarks[0]
+        pts = np.array([(int(lm.landmark[i].x * w), int(lm.landmark[i].y * h))
+                        for i in LIP_OUTER], dtype=np.int32)
+        x, y, bw, bh = cv2.boundingRect(pts)
+
+        # 8% padding
+        px, py = max(4, int(bw * 0.08)), max(4, int(bh * 0.08))
+        x1, y1 = max(0, x - px), max(0, y - py)
+        x2, y2 = min(w, x + bw + px), min(h, y + bh + py)
+
+        crop = Image.fromarray(image_rgb_np[y1:y2, x1:x2])
+        if crop.width < 15 or crop.height < 10:
+            return None, False
+        return crop, True
+    except Exception as e:
+        print(f"[MediaPipe Error] {e}")
+        return None, False
+
+
+def _crop_center_fallback(image_rgb_np):
+    """
+    Center string crop fallback for close-up lip photos where MediaPipe fails.
+    Keeps center 70% width, lower 65% height.
+    This safely crops out most mustache/chin areas.
+    """
+    h, w = image_rgb_np.shape[:2]
+    cx = int(w * 0.15)
+    cy = int(h * 0.15)
+    crop_np = image_rgb_np[cy:h, cx:w - cx]
+    return Image.fromarray(crop_np)
+
+
+def detect_lip_shape(image):
+    """
+    STEP 1: Detect lip shape and crop.
+    
+    Strategy EXACTLY mirrors training data preprocessing:
+    1. Try MediaPipe FaceMesh (for photos with nose/chin visible)
+    2. Center-strip crop fallback (for tight lip shots)
+    No color segmentation is used (avoids dark skin / facial hair bugs).
+    """
+    img_np = np.array(image)
+
+    # 1. MediaPipe
+    crop, ok = _detect_lip_mediapipe(img_np)
+    if ok:
+        print(f"[STEP 1] MediaPipe crop — {crop.width}x{crop.height}")
+        return crop, "mediapipe"
+
+    # 2. Center fallback
+    crop = _crop_center_fallback(img_np)
+    print(f"[STEP 1] Center-crop fallback — {crop.width}x{crop.height}")
+    return crop, "center_crop"
+
+
+# ======================================================
+# QUALITY & CONTENT CHECKS
 # ======================================================
 def check_image_quality(image):
-    """
-    Checks if image is too dark or has low variance (blur/flat).
-    Returns (Passed: bool, Reason: str)
-    """
-    grayscale = image.convert("L")
-    stat = ImageStat.Stat(grayscale)
-    
-    # 1. Brightness Check
-    brightness = stat.mean[0]
-    if brightness < 40:  # Threshold for too dark
-        return False, f"Image too dark (Brightness: {brightness:.1f}/255)"
-    
-    # 2. Blur/Contrast Check (Variance)
-    variance = stat.var[0]
-    if variance < 100:   # Threshold for low detail
-        return False, f"Image likely blurry or low contrast (Variance: {variance:.1f})"
-        
+    stat = ImageStat.Stat(image.convert("L"))
+    b, v = stat.mean[0], stat.var[0]
+    if b < 15: return False, "Too dark"
+    if b > 250: return False, "Too bright"
+    if v < 20: return False, "Too blurry"
     return True, "OK"
 
 
 # ======================================================
-# CONTENT RELEVANCE CHECK (SKIN TONE FILTER)
+# MODEL ARCHITECTURES
 # ======================================================
-def check_content_relevance(image):
-    """
-    Uses HSV color space to check if image contains sufficient skin-tone pixels.
-    Returns (Passed: bool, Reason: str)
-    """
-    # Convert PIL Image to NumPy array (RGB)
-    img_np = np.array(image)
-    
-    try:
-        from matplotlib.colors import rgb_to_hsv
-        img_hsv = rgb_to_hsv(img_np / 255.0) # Normalized 0-1
-        
-        # Ranges for Skin (Normalized 0-1)
-        h = img_hsv[:,:,0]
-        s = img_hsv[:,:,1]
-        v = img_hsv[:,:,2]
-        
-        # Skin Mask
-        # Skin is typically red-yellow. H near 0.
-        skin_mask = ( ((h < 0.14) | (h > 0.95)) & (s > 0.20) & (s < 0.70) & (v > 0.35) )
-        
-        skin_pixels = np.sum(skin_mask)
-        total_pixels = image.width * image.height
-        ratio = skin_pixels / total_pixels
-        
-        if ratio < 0.15: # 15% threshold
-            return False, f"No human skin/lips detected (Skin Ratio: {ratio:.1%})"
-            
-        return True, "OK"
-
-    except Exception as e:
-        # Fallback if validation fails (don't block app)
-        print(f"[Warning] Content Check Skipped: {e}")
-        return True, "Check Skipped"
-
-
-# ======================================================
-# LOAD TRAINED MOBILENETV2 MODEL (IMPROVED ARCHITECTURE)
-# ======================================================
-class ImprovedLipModel(nn.Module):
-    """Enhanced MobileNetV2 architecture matching the training script"""
-    def __init__(self, num_classes=2):
+class SimpleLipModel(nn.Module):
+    def __init__(self, n=2):
         super().__init__()
         self.mobilenet = models.mobilenet_v2(pretrained=False)
-        num_ftrs = self.mobilenet.classifier[1].in_features
+        f = self.mobilenet.classifier[1].in_features
+        self.mobilenet.classifier = nn.Sequential(nn.Dropout(0.2), nn.Linear(f, n))
+    def forward(self, x): return self.mobilenet(x)
+
+class ImprovedLipModel(nn.Module):
+    def __init__(self, n=2):
+        super().__init__()
+        # Pretrained MUST be False here for loading dict without ImageNet weights overriding
+        self.mobilenet = models.mobilenet_v2(pretrained=False)
+        f = self.mobilenet.classifier[1].in_features
         self.mobilenet.classifier = nn.Sequential(
-            nn.Dropout(0.3),
-            nn.Linear(num_ftrs, 512),
-            nn.ReLU(),
-            nn.BatchNorm1d(512),
-            nn.Dropout(0.4),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.BatchNorm1d(256),
-            nn.Dropout(0.3),
-            nn.Linear(256, num_classes)
-        )
-    
-    def forward(self, x):
-        return self.mobilenet(x)
+            nn.Dropout(0.3), nn.Linear(f, 512), nn.ReLU(), nn.BatchNorm1d(512),
+            nn.Dropout(0.4), nn.Linear(512, 256), nn.ReLU(), nn.BatchNorm1d(256),
+            nn.Dropout(0.3), nn.Linear(256, n))
+    def forward(self, x): return self.mobilenet(x)
+
+class ExpertLipModel(nn.Module):
+    def __init__(self, n=2):
+        super().__init__()
+        self.mobilenet = models.mobilenet_v2(pretrained=False)
+        f = self.mobilenet.classifier[1].in_features
+        self.mobilenet.classifier = nn.Sequential(
+            nn.Dropout(0.3), nn.Linear(f, 512), nn.ReLU(), nn.BatchNorm1d(512),
+            nn.Dropout(0.4), nn.Linear(512, 256), nn.ReLU(), nn.BatchNorm1d(256),
+            nn.Dropout(0.3), nn.Linear(256, 128), nn.ReLU(), nn.BatchNorm1d(128),
+            nn.Dropout(0.2), nn.Linear(128, n))
+    def forward(self, x): return self.mobilenet(x)
+
 
 def load_model(class_names):
     if not os.path.exists(MOBILENET_MODEL_OUT):
-        print(f"Model file not found at: {MOBILENET_MODEL_OUT}")
-
-    model = ImprovedLipModel(num_classes=len(class_names))
-
+        raise FileNotFoundError(f"Model not found: {MOBILENET_MODEL_OUT}")
+    nc = len(class_names)
     try:
-        model.load_state_dict(
-            torch.load(MOBILENET_MODEL_OUT, map_location=DEVICE)
-        )
+        try:
+            sd = torch.load(MOBILENET_MODEL_OUT, map_location=DEVICE, weights_only=True)
+        except TypeError:
+            sd = torch.load(MOBILENET_MODEL_OUT, map_location=DEVICE)
+        
+        # Determine model structure from shape
+        w1  = sd.get("mobilenet.classifier.1.weight")
+        w9  = sd.get("mobilenet.classifier.9.weight")
+        w13 = sd.get("mobilenet.classifier.13.weight")
+        
+        if w1 is not None and w1.shape == (nc, 1280):
+            model = SimpleLipModel(nc); print("[OK] SimpleLipModel structure")
+        elif w13 is not None and w13.shape[0] == nc:
+            model = ExpertLipModel(nc); print("[OK] ExpertLipModel structure")
+        else:
+            # Fallback is ImprovedLipModel
+            model = ImprovedLipModel(nc); print("[OK] ImprovedLipModel structure")
+            
+        model.load_state_dict(sd, strict=False)
+        print(f"[OK] Loaded: {MOBILENET_MODEL_OUT}")
     except Exception as e:
-        print(f"Failed to load model weights: {e}")
-
-    model.to(DEVICE)
-    model.eval()
+        raise RuntimeError(f"Load failed: {e}") from e
+    model.to(DEVICE).eval()
     return model
 
 
 # ======================================================
-# RECOMMENDATION LOGIC
+# HANDCRAFTED FEATURES (ROBUSTNESS)
 # ======================================================
-def get_recommendation(label_status, confidence):
-    if label_status == "Dehydrate":
-        return (
-            "⚠️ Possible Dehydration Detected.\n"
-            f"   (Confidence: {confidence:.0%})\n"
-            "- Drink 1–2 glasses of water immediately.\n"
-            "- Avoid caffeine/alcohol for 2 hours.\n"
-            "- Check if lips feel dry or cracked."
-        )
-    elif label_status == "Uncertain":
-        return (
-            "⚠️ Results Inconclusive.\n"
-            "- The model is not confident.\n"
-            "- Please try again with better lighting."
-        )
-    elif label_status == "REJECTED":
-        return (
-            "❌ Prediction Aborted.\n"
-            "- The image does not appear to contain a human face/lips.\n"
-            "- Please use a clear close-up of the lip area."
-        )
-    else:
-        return (
-            "✅ Hydration appears normal.\n"
-            "- Keep maintaining regular water intake."
-        )
+def extract_lip_features(image_pil):
+    """
+    Extracts hydration features that are robust to skin tone/facial hair.
+    Returns: crack_score, color_score
+    """
+    img_bgr = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
+    img_gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+    
+    # 1. Vertical crack lines (Sobel Y edge density)
+    sobel_x = cv2.Sobel(img_gray, cv2.CV_64F, 1, 0, ksize=3)
+    sobel_x = np.absolute(sobel_x)
+    sobel_x = np.uint8(255 * sobel_x / np.max(sobel_x))
+    crack_pixels = np.sum(sobel_x > 100)
+    crack_score = min(1.0, crack_pixels / (img_gray.shape[0] * img_gray.shape[1] * 0.15))
+    
+    # 2. Pink/Red vs Pale/Gray ratio (Color dryness)
+    hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+    s_channel = hsv[:, :, 1]
+    v_channel = hsv[:, :, 2]
+    
+    # Low saturation = pale/gray (dry signal)
+    pale_pixels = np.sum(s_channel < 50)
+    total_pixels = img_gray.shape[0] * img_gray.shape[1]
+    color_dryness = min(1.0, pale_pixels / (total_pixels * 0.3))
+    
+    return crack_score, color_dryness
 
 
 # ======================================================
-# HYDRATION SCORE (0–100)
+# HELPERS
 # ======================================================
-def calculate_hydration_score(label, confidence):
-    if label == "Dehydrate":
-        # Lower score = Worse hydration
-        return int((1 - confidence) * 50) + 10
-    else:
-        # Higher score = Better hydration
-        return int(60 + confidence * 40)
+def get_recommendation(status, confidence):
+    recs = {
+        "Dehydrate": f"Possible Dehydration Detected (Confidence: {confidence:.0%}).\n- Drink 1-2 glasses of water.\n- Avoid caffeine for 2 hours.",
+        "Uncertain": "Results Inconclusive.\n- Try again with a clear photo.",
+        "REJECTED": "Image rejected.\n- Please take a clear close-up.",
+        "Normal": "Hydration appears normal.\n- Keep maintaining regular water intake."
+    }
+    return recs.get(status, recs["Normal"])
 
+def calculate_hydration_score(label, expected_dehy):
+    # Scale from final probability
+    if expected_dehy > 0.5:
+        return max(10, min(45, int((1 - expected_dehy) * 50) + 10))
+    return max(60, min(95, int(55 + (1-expected_dehy) * 40)))
 
-# ======================================================
-# UI OVERLAY
-# ======================================================
 def draw_overlay(image, score, status, warnings=[]):
     image = image.convert("RGBA")
     overlay = Image.new("RGBA", image.size, (255, 255, 255, 0))
     draw = ImageDraw.Draw(overlay)
-
-    # Colors
-    if status == "Dehydrate":
-        bg_col = (200, 50, 50, 180) # Red
-    elif status == "Uncertain":
-        bg_col = (200, 160, 50, 180) # Orange
-    elif status == "REJECTED":
-        bg_col = (80, 80, 80, 200) # Gray
-    else:
-        bg_col = (50, 180, 80, 180) # Green
-
-    # Top Banner
-    draw.rectangle((0, 0, image.width, 60), fill=bg_col)
-    
-    # Try to load font, fallback to default
-    try:
-        font_lg = ImageFont.truetype("arial.ttf", 26)
-        font_sm = ImageFont.truetype("arial.ttf", 16)
-    except:
-        font_lg = ImageFont.load_default()
-        font_sm = ImageFont.load_default()
-
-    draw.text((20, 15), f"Status: {status}", fill="white", font=font_lg)
-
-    # Warnings (if any)
-    y_warn = 70
+    colors = {"Dehydrate": (200,50,50,180), "Uncertain": (200,160,50,180), "REJECTED": (80,80,80,200)}
+    draw.rectangle((0, 0, image.width, 60), fill=colors.get(status, (50,180,80,180)))
+    try: font = ImageFont.truetype("arial.ttf", 26); sfont = ImageFont.truetype("arial.ttf", 16)
+    except: font = ImageFont.load_default(); sfont = font
+    draw.text((20, 15), f"Status: {status}", fill="white", font=font)
+    y = 70
     for w in warnings:
-        draw.rectangle((0, y_warn, image.width, y_warn + 30), fill=(0, 0, 0, 150))
-        draw.text((20, y_warn + 5), f"⚠️ {w}", fill="yellow", font=font_sm)
-        y_warn += 35
-
+        draw.rectangle((0, y, image.width, y+30), fill=(0,0,0,150))
+        draw.text((20, y+5), w, fill="yellow", font=sfont)
+        y += 35
     return Image.alpha_composite(image, overlay).convert("RGB")
 
 
-
 # ======================================================
-# GRAD-CAM VISUALIZATION (XAI)
+# GRAD-CAM
 # ======================================================
-def generate_gradcam_heatmap(model, input_tensor, target_class, original_image):
-    """
-    Generates a Grad-CAM heatmap overlay and a textual explanation.
-    Returns (heatmap_pil, explanation_text)
-    """
+def generate_gradcam_heatmap(model, tensor, target_class, original_image):
     try:
-        # Target the last conv layer of MobileNetV2
-        target_layer = model.mobilenet.features[18]
-        lgc = LayerGradCam(model, target_layer)
+        layer = model.mobilenet.features[18]
+        if 'LayerGradCam' not in globals():
+            return None, "XAI unobtainable."
+        lgc = LayerGradCam(model, layer)
+        attr = lgc.attribute(tensor, target=target_class, relu_attributions=True)
+        hm = attr.squeeze().cpu().detach().numpy()
+        hm = np.maximum(hm, 0)
+        if np.max(hm) > 0: hm /= np.max(hm)
         
-        # Attribute
-        atttribution = lgc.attribute(input_tensor, target=target_class, relu_attributions=True)
-        
-        # Process heatmap
-        heatmap = atttribution.squeeze().cpu().detach().numpy()
-        heatmap = np.maximum(heatmap, 0)
-        
-        # Explain based on heatmap distribution
-        # Split into 3x3 grid to find hot zones
-        h, w = heatmap.shape
-        grid_y, grid_x = h // 3, w // 3
-        
-        regions = {
-            "top": np.mean(heatmap[0:grid_y, :]),
-            "bottom": np.mean(heatmap[2*grid_y:, :]),
-            "left": np.mean(heatmap[:, 0:grid_x]),
-            "right": np.mean(heatmap[:, 2*grid_x:]),
-            "center": np.mean(heatmap[grid_y:2*grid_y, grid_x:2*grid_x])
-        }
-        
-        # Find highest region
-        top_region = max(regions, key=regions.get)
-        
-        if regions[top_region] < 0.01:
-            explanation = "The AI looked at the overall lip texture to determine hydration."
-        else:
-            region_map = {
-                "top": "upper lip area",
-                "bottom": "lower lip area",
-                "left": "left corner of the mouth",
-                "right": "right corner of the mouth",
-                "center": "central lip region"
-            }
-            explanation = f"The AI focused primarily on the {region_map[top_region]}, identifying specific texture patterns associated with your hydration level."
-
-        # Normalize for image
-        if np.max(heatmap) > 0:
-            heatmap /= np.max(heatmap)
-            
-        # Resize to match original image
-        overlay_heatmap = cv2.resize(heatmap, (original_image.width, original_image.height))
-        overlay_heatmap = np.uint8(255 * overlay_heatmap)
-        
-        # Apply colormap (JET)
-        heatmap_img = cv2.applyColorMap(overlay_heatmap, cv2.COLORMAP_JET)
-        heatmap_img = cv2.cvtColor(heatmap_img, cv2.COLOR_BGR2RGB)
-        
-        # Overlay on original image
-        original_np = np.array(original_image)
-        overlay = cv2.addWeighted(original_np, 0.6, heatmap_img, 0.4, 0)
-        
-        return Image.fromarray(overlay), explanation
+        hm_r = cv2.resize(hm, (original_image.width, original_image.height))
+        hm_c = cv2.applyColorMap(np.uint8(255 * hm_r), cv2.COLORMAP_JET)
+        hm_c = cv2.cvtColor(hm_c, cv2.COLOR_BGR2RGB)
+        blended = cv2.addWeighted(np.array(original_image), 0.6, hm_c, 0.4, 0)
+        return Image.fromarray(blended), "AI texture analysis heatmap."
     except Exception as e:
-        print(f"[XAI Error] Grad-CAM failed: {e}")
-        return None, "Reasoning visualization unavailable."
+        print(f"[XAI] {e}")
+        return None, "Visualization unavailable."
+
 
 # ======================================================
-# IMAGE PREDICTION (ENHANCED WITH ADVANCED FEATURES)
+# MAIN PIPELINE — HYBRID APPROACH
 # ======================================================
 def predict_image(image_path, model, class_names):
+    """
+    1. Try MediaPipe, else center crop
+    2. Extract handcrafted features (cracks, color dryness)
+    3. Run CNN inference
+    4. Ensemble (CNN 70% + Features 30%)
+    """
     transform = get_transforms(train=False)
-    
-    try:
-        image = Image.open(image_path).convert("RGB")
-    except Exception as e:
-        print(f"[Error] Could not open image: {e}")
-        return None
+
+    try: image = Image.open(image_path).convert("RGB")
+    except Exception: return None
 
     warnings = []
-    advanced_info = {}
-    
-    # ========== ADVANCED FEATURE EXTRACTION ==========
-    if ADVANCED_FEATURES_AVAILABLE:
-        try:
-            print("[INFO] Running advanced feature extraction...")
-            feature_data = extract_all_features(image, auto_enhance=True)
-            
-            features = feature_data['features']
-            processed_image = feature_data['processed_image']
-            enhanced_image = feature_data['enhanced_image']
-            landmarks = feature_data['landmarks']
-            metadata = feature_data['metadata']
-            
-            # Calculate quality score
-            quality_score = calculate_image_quality_score(features)
-            
-            # Store advanced info for output
-            advanced_info = {
-                'quality_score': quality_score,
-                'lip_detected': features.get('lip_detected', False),
-                'crack_severity': features.get('crack_severity_score', 0),
-                'color_redness': features.get('redness_ratio', 0),
-                'texture_roughness': features.get('surface_roughness', 0),
-                'landmarks': landmarks
-            }
-            
-            # Quality-based warnings
-            if quality_score < 60:
-                warnings.append(f"Image Quality: {quality_score:.0f}/100")
-            
-            if not features.get('lip_detected'):
-                warnings.append("Lip region not clearly detected")
-            
-            # Use processed (cropped + enhanced) image for prediction
-            image_for_prediction = processed_image
-            
-            print(f"[INFO] Quality Score: {quality_score:.1f}/100")
-            print(f"[INFO] Lip Detected: {features.get('lip_detected')}")
-            print(f"[INFO] Crack Severity: {features.get('crack_severity_score', 0):.1f}")
-            
-        except Exception as e:
-            print(f"[Warning] Advanced features failed: {e}")
-            image_for_prediction = image
-    else:
-        image_for_prediction = image
-    
-    # 1. Quality Check (Original)
-    is_good, reason = check_image_quality(image)
-    if not is_good:
-        print(f"[Warning] Image Quality Issue: {reason}")
-        warnings.append(reason)
 
-    # 2. Content Relevance Check (Skin Filter)
-    is_relevant, relevance_reason = check_content_relevance(image_for_prediction)
-    if not is_relevant:
-        print(f"[REJECTING] {relevance_reason}")
-        # Stop Pipeline Here
-        status_display = "REJECTED"
-        warnings.append(relevance_reason)
-        score = 0
-        final_image = draw_overlay(image, score, status_display, warnings)
-        
-        # Save & Return Early
-        os.makedirs("img/uploads", exist_ok=True)
-        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-        out_path = f"img/uploads/rejected_{ts}.png"
-        final_image.save(out_path)
-        
-        return status_display, 0, 0.0, get_recommendation("REJECTED", 0), out_path, None, "Image rejected due to quality issues", advanced_info
+    # ── STEP 1: DETECT LIP SHAPE ──
+    print("=" * 50)
+    lip_crop, method = detect_lip_shape(image)
 
-    # 3. Inference (Only if relevant)
-    tensor = transform(image_for_prediction).unsqueeze(0).to(DEVICE)
+    # ── STEP 2: QUALITY CHECK ──
+    ok, reason = check_image_quality(lip_crop)
+    if not ok: warnings.append(reason)
+
+    # ── STEP 3: CNN INFERENCE ──
+    tensor = transform(lip_crop).unsqueeze(0).to(DEVICE)
     with torch.no_grad():
         outputs = model(tensor)
         probs = F.softmax(outputs, dim=1)
-        
-    p_dehydrate = probs[0][0].item()
-    p_normal = probs[0][1].item()
-    
-    # ========== ENHANCED DECISION LOGIC ==========
-    # Combine ML prediction with advanced features
-    DEHYDRATION_THRESHOLD = 0.35
-    UNCERTAINTY_THRESHOLD = 0.65
-    
-    # Adjust threshold based on advanced features
-    if ADVANCED_FEATURES_AVAILABLE and 'crack_severity' in advanced_info:
-        crack_severity = advanced_info['crack_severity']
-        
-        # If high crack severity detected, boost dehydration confidence
-        if crack_severity > 30:
-            print(f"[INFO] High crack severity ({crack_severity:.1f}) detected - adjusting prediction")
-            p_dehydrate = min(1.0, p_dehydrate + 0.15)  # Boost dehydration probability
-            p_normal = 1.0 - p_dehydrate
 
-    if p_dehydrate > DEHYDRATION_THRESHOLD:
-        label = "Dehydrate"
-        confidence = p_dehydrate
+    cnn_dehy = probs[0][0].item()
+    cnn_norm = probs[0][1].item()
+    
+    # ── STEP 4: RULE-BASED FEATURES ──
+    # This prevents total failure on out-of-distribution skin tones
+    crack_score, color_dryness = extract_lip_features(lip_crop)
+    feature_dehy = (crack_score * 0.6) + (color_dryness * 0.4)
+    
+    print(f"[STEP 3] CNN Dehydrate = {cnn_dehy:.4f}")
+    print(f"[STEP 4] Features Dehydrate = {feature_dehy:.4f} (Cracks: {crack_score:.2f}, Pale: {color_dryness:.2f})")
+
+    # ── STEP 5: ENSEMBLE DECISION ──
+    # Blend CNN output (learning) with handcrafted features (robustness)
+    final_dehy = (cnn_dehy * 0.7) + (feature_dehy * 0.3)
+    
+    if final_dehy > 0.50:
+        label, confidence = "Dehydrate", final_dehy
     else:
-        label = "Normal"
-        confidence = p_normal
+        label, confidence = "Normal", 1.0 - final_dehy
 
-    if confidence < UNCERTAINTY_THRESHOLD:
-        status_display = "Uncertain"
-        warnings.append("Low Confidence")
-    else:
-        status_display = label
+    status = label if confidence >= 0.55 else "Uncertain"
+    if status == "Uncertain": warnings.append(f"Low Confidence ({confidence:.0%})")
 
-    score = calculate_hydration_score(label, confidence)
-    
-    # 🔥 XAI: Generate Heatmap & Explanation
-    heatmap_pil, xai_desc = generate_gradcam_heatmap(model, tensor, class_names.index(label), image_for_prediction)
-    
-    # Enhance XAI description with advanced features
-    if ADVANCED_FEATURES_AVAILABLE and advanced_info:
-        xai_additions = []
-        if advanced_info.get('crack_severity', 0) > 20:
-            xai_additions.append(f"Surface texture analysis detected signs of dryness (severity: {advanced_info['crack_severity']:.0f}/100).")
-        if advanced_info.get('color_redness', 0) > 0.1:
-            xai_additions.append("Color analysis shows increased redness typical of dehydration.")
-        
-        if xai_additions:
-            xai_desc = xai_desc + " " + " ".join(xai_additions)
-    
-    final_image = draw_overlay(image, score, status_display, warnings)
-    
+    score = calculate_hydration_score(label, final_dehy)
+    print(f"[STEP 5] {status} | Final Score: {score}/100 | Confidence: {confidence:.0%}")
+    print("=" * 50)
+
+    # ── STEP 6: HEATMAP ──
+    heatmap, xai_desc = generate_gradcam_heatmap(model, tensor, 0 if label=="Dehydrate" else 1, lip_crop)
+
+    # ── SAVE ──
+    final = draw_overlay(image, score, status, warnings)
     os.makedirs("img/uploads", exist_ok=True)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # Save standard result
     out_path = f"img/uploads/result_{ts}.png"
-    final_image.save(out_path)
-    
-    # Save heatmap version
-    xai_path = f"img/uploads/xai_heatmap_{ts}.png"
-    if heatmap_pil:
-        heatmap_pil.save(xai_path)
-    else:
-        xai_path = None
+    final.save(out_path)
+    xai_path = None
+    if heatmap:
+        xai_path = f"img/uploads/xai_heatmap_{ts}.png"
+        heatmap.save(xai_path)
 
-    return status_display, score, confidence, get_recommendation(status_display, confidence), out_path, xai_path, xai_desc, advanced_info
-
+    adv = {"lip_detected": method == "mediapipe", "quality_score": 70 if ok else 40}
+    return status, score, confidence, get_recommendation(status, confidence), out_path, xai_path, xai_desc, adv
 
 
 # ======================================================
-# LAZY LOADER GLOBAL
+# ENTRY POINT
 # ======================================================
 GLOBAL_MODEL = None
 GLOBAL_CLASSES = ["Dehydrate", "Normal"]
@@ -463,32 +355,24 @@ def predict_single(image_path):
         try:
             GLOBAL_MODEL = load_model(GLOBAL_CLASSES)
         except Exception as e:
-            return {"error": f"Model load failed: {str(e)}", "confidence": 0, "hydration_score": 0, "prediction": "Error"}
+            return {"error": str(e), "confidence": 0, "hydration_score": 0, "prediction": "Error"}
 
     result = predict_image(image_path, GLOBAL_MODEL, GLOBAL_CLASSES)
-    
-    # Handle both old and new return formats
-    if len(result) == 8:
-        label, score, conf, rec, saved_path, xai_path, xai_desc, advanced_info = result
-    else:
-        # Fallback for old format
-        label, score, conf, rec, saved_path = result[:5]
-        xai_path = result[5] if len(result) > 5 else None
-        xai_desc = result[6] if len(result) > 6 else "No description"
-        advanced_info = {}
-    
+    if result is None:
+        return {"error": "Failed", "confidence": 0, "hydration_score": 0, "prediction": "Error"}
+
+    label, score, conf, rec, saved, xai, desc, adv = result if len(result) == 8 else (*result[:5], None, "", {})
+
     return {
         "prediction": label,
         "hydration_score": score,
         "confidence": float(conf),
-        "saved_image_path": saved_path,
-        "xai_heatmap_path": xai_path,
-        "xai_description": xai_desc,
+        "saved_image_path": saved,
+        "xai_heatmap_path": xai,
+        "xai_description": desc,
         "recommendation": rec,
         "advanced_analysis": {
-            "quality_score": advanced_info.get('quality_score', None),
-            "lip_detected": advanced_info.get('lip_detected', None),
-            "crack_severity": advanced_info.get('crack_severity', None),
-            "texture_roughness": advanced_info.get('texture_roughness', None)
+            "quality_score": adv.get("quality_score"),
+            "lip_detected": adv.get("lip_detected"),
         }
     }

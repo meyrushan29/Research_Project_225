@@ -77,9 +77,9 @@ EXERCISE_CONFIG = {
 
     "lateral_raise": {
         "type": "rep",
-        "joints": ["RIGHT_SHOULDER", "RIGHT_ELBOW", "RIGHT_WRIST"],
-        "up": 30,
-        "down": 90
+        "joints": ["RIGHT_ELBOW", "RIGHT_SHOULDER", "RIGHT_EAR"],
+        "up": 100,
+        "down": 160
     },
 
     "t_bar_row": {
@@ -127,8 +127,8 @@ EXERCISE_CONFIG = {
 
     "leg_raises": {
         "type": "rep",
-        "joints": ["RIGHT_HIP", "RIGHT_KNEE", "RIGHT_ANKLE"],
-        "up": 40,
+        "joints": ["RIGHT_SHOULDER", "RIGHT_HIP", "RIGHT_KNEE"],
+        "up": 110,
         "down": 160
     },
 

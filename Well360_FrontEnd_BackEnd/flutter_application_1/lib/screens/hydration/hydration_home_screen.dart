@@ -1,5 +1,6 @@
 // lib/screens/hydration/hydration_home_screen.dart
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'form_screen.dart';
@@ -12,6 +13,7 @@ import 'combined_result_screen.dart' as import_results;
 
 import 'package:flutter_application_1/services/api_service.dart';
 import '../../services/notification_service.dart';
+import '../profile/profile_screen.dart';
 
 class HydrationHomeScreen extends StatefulWidget {
   const HydrationHomeScreen({super.key});
@@ -30,11 +32,12 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize & Schedule Notifications
-    NotificationService().init().then((_) {
-      NotificationService().scheduleDailyHourlyReminders();
-    });
-    
+    // Initialize & schedule notifications only on mobile (not on web)
+    if (!kIsWeb) {
+      NotificationService().init().then((_) {
+        NotificationService().scheduleDailyHourlyReminders();
+      });
+    }
     _fetchDashboard();
   }
 
@@ -123,6 +126,30 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF050505),
       extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'HYDRATION',
+          style: GoogleFonts.orbitron(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 2,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline_rounded, color: Colors.cyanAccent, size: 22),
+            tooltip: 'Profile',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           // 1. Base Background
@@ -148,21 +175,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                   const SizedBox(height: 10),
-                   
-                   Text(
-                    'HYDRATION\nMONITOR',
-                    style: GoogleFonts.orbitron(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2,
-                      height: 1.1
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
                   // ==========================
                   // NEW GOAL DASHBOARD CARD
@@ -183,48 +196,60 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
                   // Cards
                   const SizedBox(height: 20),
 
-                  _buildMenuCard(
-                    context,
-                    title: "QUICK FORM LOG",
-                    subtitle: "Record water intake & vitals",
-                    icon: Icons.assignment_outlined,
-                    color: Colors.cyanAccent,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const FormScreen()),
-                    ).then((_) => _fetchDashboard()), // Refresh on return
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildGridCard(
+                          context,
+                          title: "QUICK FORM LOG",
+                          subtitle: "Record water intake\n& vitals",
+                          icon: Icons.assignment_outlined,
+                          color: Colors.cyanAccent,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const FormScreen()),
+                          ).then((_) => _fetchDashboard()), // Refresh on return
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildGridCard(
+                          context,
+                          title: "LIP SCAN ONLY",
+                          subtitle: "AI dehydration\ndetection",
+                          icon: Icons.face_retouching_natural,
+                          color: Colors.blueAccent,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LipImageScreen()),
+                          ).then((_) => _fetchDashboard()), // Refresh on return
+                        ),
+                      ),
+                    ],
                   ),
-                   const SizedBox(height: 20),
-                  _buildMenuCard(
-                    context,
-                    title: "LIP SCAN ONLY",
-                    subtitle: "AI dehydration detection",
-                    icon: Icons.face_retouching_natural,
-                    color: Colors.blueAccent,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const LipImageScreen()),
-                    ).then((_) => _fetchDashboard()), // Refresh on return
-                  ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
                   
-                  const SizedBox(height: 20),
-                  
-                  _buildLatestResultButton(context),
-
-                  const SizedBox(height: 20),
-
-                  _buildMenuCard(
-                    context,
-                    title: "HISTORY & TRENDS",
-                    subtitle: "View logs and analysis",
-                    icon: Icons.history,
-                    color: Colors.purpleAccent,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HistoryScreen()),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildLatestResultGridButton(context),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildGridCard(
+                          context,
+                          title: "HISTORY & TRENDS",
+                          subtitle: "View logs and\nanalysis",
+                          icon: Icons.history,
+                          color: Colors.purpleAccent,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   
                   const SizedBox(height: 40),                ],
@@ -244,14 +269,14 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.deepPurple.withValues(alpha: 0.15),
-            Colors.blueAccent.withValues(alpha: 0.1)
+            Colors.deepPurple.withOpacity(0.15),
+            Colors.blueAccent.withOpacity(0.1)
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.purpleAccent.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.purpleAccent.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +302,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
           if (_filledSlots.isNotEmpty) ...[
             Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
+                const Icon(Icons.check_circle, color: Colors.greenAccent, size: 18),
                 const SizedBox(width: 8),
                 Text(
                   "Completed Slots",
@@ -297,9 +322,9 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.15),
+                    color: Colors.green.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.4)),
+                    border: Border.all(color: Colors.greenAccent.withOpacity(0.4)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -316,7 +341,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.greenAccent.withValues(alpha: 0.2),
+                          color: Colors.greenAccent.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -363,9 +388,9 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.15),
+                    color: Colors.red.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                    border: Border.all(color: Colors.redAccent.withOpacity(0.4)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -382,7 +407,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.redAccent.withValues(alpha: 0.2),
+                          color: Colors.redAccent.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -428,11 +453,11 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: LinearGradient(
-          colors: [Colors.blueAccent.withValues(alpha: 0.2), Colors.cyanAccent.withValues(alpha: 0.1)],
+          colors: [Colors.blueAccent.withOpacity(0.2), Colors.cyanAccent.withOpacity(0.1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight
         ),
-        border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.cyanAccent.withOpacity(0.3)),
       ),
       child: Column(
         children: [
@@ -473,7 +498,7 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
     );
   }
 
-  Widget _buildMenuCard(
+  Widget _buildGridCard(
     BuildContext context, {
     required String title,
     required String subtitle,
@@ -489,52 +514,50 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: color.withValues(alpha: 0.3)),
+                border: Border.all(color: color.withOpacity(0.3)),
                 boxShadow: [
-                  BoxShadow(color: color.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))
+                  BoxShadow(color: color.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))
                 ]
               ),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
+                      color: color.withOpacity(0.1),
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: color.withValues(alpha: 0.2), blurRadius: 10)]
+                      boxShadow: [BoxShadow(color: color.withOpacity(0.2), blurRadius: 10)]
                     ),
-                    child: Icon(icon, color: color, size: 32),
+                    child: Icon(icon, color: color, size: 28),
                   ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: GoogleFonts.orbitron(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          subtitle,
-                          style: GoogleFonts.exo2(
-                            fontSize: 13,
-                            color: Colors.white60,
-                            ),
-                        ),
-                      ],
+                  const SizedBox(height: 16),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.orbitron(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios_rounded, color: color.withValues(alpha: 0.5), size: 16),
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.exo2(
+                      fontSize: 11,
+                      color: Colors.white60,
+                      height: 1.2
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -543,15 +566,15 @@ class _HydrationHomeScreenState extends State<HydrationHomeScreen> {
       );
   }
 
-  Widget _buildLatestResultButton(BuildContext context) {
+  Widget _buildLatestResultGridButton(BuildContext context) {
     // Quick check:
     final service = import_services.HydrationResultsService();
     // if (!service.hasFormResult && !service.hasLipResult) return const SizedBox.shrink(); // Always show now
 
-    return _buildMenuCard(
+    return _buildGridCard(
       context,
       title: "VIEW COMPARISON",
-      subtitle: "See latest analysis results",
+      subtitle: "See latest analysis",
       icon: Icons.analytics_outlined,
       color: Colors.greenAccent,
       onTap: () {

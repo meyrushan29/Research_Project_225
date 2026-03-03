@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -7,9 +8,17 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin? _notifications;
+  bool _initialized = false;
+
+  FlutterLocalNotificationsPlugin get _plugin {
+    _notifications ??= FlutterLocalNotificationsPlugin();
+    return _notifications!;
+  }
 
   Future<void> init() async {
+    if (kIsWeb) return; // Local notifications not supported on web
+    if (_initialized) return;
     tz_data.initializeTimeZones();
 
     const AndroidInitializationSettings androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -24,17 +33,20 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notifications.initialize(
+    await _plugin.initialize(
       settings: initSettings,
       onDidReceiveNotificationResponse: (details) async {
         // Handle notification tap
       },
     );
+    _initialized = true;
   }
 
   Future<void> scheduleDailyHourlyReminders() async {
+    if (kIsWeb) return; // Local notifications not supported on web
+    if (!_initialized) await init();
     // Clear existing to avoid duplicates
-    await _notifications.cancelAll();
+    await _plugin.cancelAll();
 
     // 1. Goal Renewal at Midnight (00:00)
     await _scheduleDailyAtTime(
@@ -56,7 +68,8 @@ class NotificationService {
   }
 
   Future<void> _scheduleDailyAtTime(int hour, int minute, {required int id, required String title, required String body}) async {
-    await _notifications.zonedSchedule(
+    if (kIsWeb) return;
+    await _plugin.zonedSchedule(
       id: id,
       title: title,
       body: body,

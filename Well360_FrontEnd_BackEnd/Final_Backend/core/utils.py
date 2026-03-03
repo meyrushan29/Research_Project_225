@@ -1,6 +1,7 @@
 import logging
 import sys
 import pickle
+import joblib  # For loading ML models
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -40,10 +41,16 @@ def save_pickle(obj: Any, path: Path) -> None:
 
 
 def load_pickle(path: Path) -> Any:
-
+    """
+    Load a pickled object using joblib (consistent with training script).
+    
+    Note: We use joblib.load() instead of pickle.load() because:
+    - Training scripts use joblib.dump() to save models
+    - joblib is optimized for sklearn/numpy objects
+    - Mixing pickle/joblib can cause "invalid load key" errors
+    """
     try:
-        with open(path, 'rb') as f:
-            return pickle.load(f)
+        return joblib.load(path)
     except Exception as e:
         raise IOError(f"Failed to load pickle from {path}: {e}")
 
@@ -143,3 +150,120 @@ def calculate_unified_score(input_type: str, value: Any, confidence: float = 1.0
             score = 50 - (confidence * 50)
 
     return int(max(0, min(100, score)))
+
+
+# Helper: Convert UTC (Naive from DB) to Local System Time
+def to_system_local(dt_utc):
+    if dt_utc is None: return None
+    # Assume stored as Naive UTC. Access timezone from existing import or new one.
+    # Since 'from datetime import datetime' is at top, we need 'timezone'.
+    from datetime import timezone
+    utc_aware = dt_utc.replace(tzinfo=timezone.utc)
+    return utc_aware.astimezone() # Converts to System Local Time
+
+def parse_slot_hours(slot_name):
+    slot_name = slot_name.lower().strip()
+    # "Midnight-4 AM", "4 AM-8 AM", "8 AM-12 PM", "12 PM-4 PM", "4 PM-8 PM", "8 PM-Midnight"
+    if "midnight-4 am" in slot_name: return [0, 1, 2, 3]
+    if "4 am-8 am" in slot_name: return [4, 5, 6, 7]
+    if "8 am-12 pm" in slot_name: return [8, 9, 10, 11]
+    if "12 pm-4 pm" in slot_name: return [12, 13, 14, 15]
+    if "4 pm-8 pm" in slot_name: return [16, 17, 18, 19]
+    if "8 pm-midnight" in slot_name: return [20, 21, 22, 23]
+    return []
+
+
+def fetch_personalized_suggestions(db, model_type: str, prediction_data: Dict) -> list:
+    """
+    Fetch personalized suggestions from database based on prediction results.
+    
+    Args:
+        db: Database session
+        model_type: "form" or "lip"
+        prediction_data: Dictionary containing prediction results
+        
+    Returns:
+        List of top 3 matching suggestions sorted by priority (highest first)
+        Maximum 3 suggestions for better user experience
+    """
+    from core.models import HydrationSuggestion
+    
+    # Start with active suggestions for the correct model type
+    query = db.query(HydrationSuggestion).filter(
+        HydrationSuggestion.is_active == True,
+        (HydrationSuggestion.model_type == model_type) | (HydrationSuggestion.model_type == "both")
+    )
+    
+    all_suggestions = query.all()
+    matching_suggestions = []
+    
+    for suggestion in all_suggestions:
+        matches = True
+        
+        if model_type == "form":
+            # Check Form Prediction conditions
+            risk_level = prediction_data.get("risk_level")
+            recommended_liters = prediction_data.get("recommended_liters")
+            activity_level = prediction_data.get("activity_level")
+            temperature = prediction_data.get("temperature_c")
+            has_any_symptom = prediction_data.get("has_symptoms", False)
+            time_slot = prediction_data.get("time_slot")
+            
+            # Risk level matching
+            if suggestion.risk_level and suggestion.risk_level != risk_level:
+                matches = False
+            
+            # Recommended liters range
+            if suggestion.min_recommended_liters is not None and recommended_liters < suggestion.min_recommended_liters:
+                matches = False
+            if suggestion.max_recommended_liters is not None and recommended_liters > suggestion.max_recommended_liters:
+                matches = False
+            
+            # Activity level matching
+            if suggestion.activity_level and suggestion.activity_level != activity_level:
+                matches = False
+            
+            # Temperature range
+            if suggestion.temperature_min is not None and temperature < suggestion.temperature_min:
+                matches = False
+            if suggestion.temperature_max is not None and temperature > suggestion.temperature_max:
+                matches = False
+            
+            # Symptom matching
+            if suggestion.has_symptoms is not None and suggestion.has_symptoms != has_any_symptom:
+                matches = False
+            
+            # Time slot matching
+            if suggestion.time_slots and time_slot not in suggestion.time_slots:
+                matches = False
+                
+        elif model_type == "lip":
+            # Check Lip Analysis conditions
+            lip_prediction = prediction_data.get("lip_prediction")
+            hydration_score = prediction_data.get("hydration_score")
+            
+            # Lip prediction matching
+            if suggestion.lip_prediction and suggestion.lip_prediction != lip_prediction:
+                matches = False
+            
+            # Hydration score range
+            if suggestion.min_hydration_score is not None and hydration_score < suggestion.min_hydration_score:
+                matches = False
+            if suggestion.max_hydration_score is not None and hydration_score > suggestion.max_hydration_score:
+                matches = False
+        
+        if matches:
+            matching_suggestions.append({
+                "id": suggestion.id,
+                "title": suggestion.title,
+                "content": suggestion.content,
+                "category": suggestion.category,
+                "priority": suggestion.priority
+            })
+    
+    # Sort by priority (highest first), then by id
+    matching_suggestions.sort(key=lambda x: (-x["priority"], x["id"]))
+    
+    # 🔥 LIMIT TO TOP 4 SUGGESTIONS FOR BETTER USER EXPERIENCE
+    return matching_suggestions[:4]
+

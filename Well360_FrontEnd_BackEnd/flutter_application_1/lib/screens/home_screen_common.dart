@@ -5,6 +5,7 @@ import 'fitness/fitness_home_screen.dart';
 import 'hydration/hydration_home_screen.dart';
 import 'mentalHealth/home_screen.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
+import 'package:flutter_application_1/screens/profile/profile_screen.dart';
 
 class HomeScreenCommon extends StatelessWidget {
   const HomeScreenCommon({super.key});
@@ -14,6 +15,24 @@ class HomeScreenCommon extends StatelessWidget {
     // Dark Futuristic Background
     return Scaffold(
       extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 16, top: 8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.1),
+              border: Border.all(color: Colors.cyanAccent.withValues(alpha: 0.3)),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.person_rounded, color: Colors.cyanAccent),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+            ),
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           // 1. Base Dark Background with Gradients
@@ -66,35 +85,44 @@ class HomeScreenCommon extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 60),
                   // Header Section
                   Center(
                     child: Column(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Colors.cyanAccent, Colors.purpleAccent],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Colors.cyanAccent, Colors.purpleAccent],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              boxShadow: [
+                                BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.4), blurRadius: 20),
+                              ],
                             ),
-                            boxShadow: [
-                              BoxShadow(color: Colors.cyanAccent.withValues(alpha: 0.4), blurRadius: 20),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 45,
-                            backgroundColor: Colors.black,
-                            child: Padding(
-                              padding: const EdgeInsets.all(2.0),
-                              child: ClipOval(
-                                child: Image.asset(
-                                  'assets/icon/well360_logo.png',
-                                  fit: BoxFit.cover,
-                                  width: 90,
-                                  height: 90,
-                                  errorBuilder: (c, o, s) => const Icon(Icons.person, size: 50, color: Colors.white),
+                            child: CircleAvatar(
+                              radius: 45,
+                              backgroundColor: Colors.black,
+                              child: Padding(
+                                padding: const EdgeInsets.all(2.0),
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/icon/well360_logo.png',
+                                    fit: BoxFit.cover,
+                                    width: 90,
+                                    height: 90,
+                                    errorBuilder: (c, o, s) => const Icon(Icons.person, size: 50, color: Colors.white),
+                                  ),
                                 ),
                               ),
                             ),
@@ -143,7 +171,7 @@ class HomeScreenCommon extends StatelessWidget {
                     context,
                     title: "FITNESS AI",
                     subtitle: "Pose Detection & Form Analysis",
-                    icon: Icons.fitness_center_outlined,
+                    icon: Icons.accessibility_new_rounded,
                     color: const Color(0xFFC6FF00), // Lime Neon
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeScreen())),
                   ),

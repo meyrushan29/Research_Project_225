@@ -1,0 +1,45 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+logs/
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+app.db
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+
+# Test images and results
+img/result_*.png
+img/rejected_*.png
+
+# Model checkpoints (if large)
+# *.h5
+# *.pt
+# *.pth
+
+# Data processing artifacts
+data_processed/
+
+# IDE
+.idea/
+.vscode/

@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_application_1/services/auth_service.dart';
 import 'package:flutter_application_1/screens/auth/register_screen.dart';
 import 'package:flutter_application_1/screens/home_screen_common.dart';
@@ -34,6 +35,50 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
+  }
+
+  final _googleSignIn = GoogleSignIn(
+    serverClientId: '292610894914-vq7nvud4mohs8bvpc33d3s6f7vmsvo1o.apps.googleusercontent.com',
+  );
+
+  Future<void> _googleLogin() async {
+    setState(() => _loading = true);
+    try {
+      final googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // User canceled
+        setState(() => _loading = false);
+        return;
+      }
+      
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      
+      if (idToken == null) {
+         throw "Could not retrieve Google ID Token";
+      }
+      
+      // Backend Verification
+      final error = await AuthService.googleLoginBackend(idToken);
+      
+      if (error == null) {
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (_) => const HomeScreenCommon())
+          );
+      } else {
+        throw error;
+      }
+      
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Google Sign-In Failed: $e"), backgroundColor: Colors.redAccent),
+      );
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   void _login() async {
@@ -92,6 +137,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     }
   }
 
+
+
   void _showSettingsDialog() {
     final controller = TextEditingController(text: AuthService.baseUrl);
     showDialog(
@@ -125,6 +172,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                 spacing: 8,
                 runSpacing: 8,
                 children: [
+                  _buildPresetChip("Web", "http://127.0.0.1:8000", controller),
                   _buildPresetChip("Emulator", "http://10.0.2.2:8000", controller),
                   _buildPresetChip("Physical", "http://172.20.10.2:8000", controller),
                   _buildPresetChip("Localhost", "http://localhost:8000", controller),
@@ -314,6 +362,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 child: _loading
                                     ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                                     : Text("INITIATE LOGIN", style: GoogleFonts.orbitron(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: 1.5)),
+                              ),
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Google Login Button
+                          SizedBox(
+                            width: double.infinity,
+                            height: 50,
+                            child: OutlinedButton.icon(
+                              onPressed: _loading ? null : _googleLogin,
+                              icon: const Icon(Icons.g_mobiledata, size: 28, color: Colors.white),
+                              label: Text("SIGN IN WITH GOOGLE", style: GoogleFonts.orbitron(color: Colors.white, letterSpacing: 1.2)),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(color: Colors.white24),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
                             ),
                           ),

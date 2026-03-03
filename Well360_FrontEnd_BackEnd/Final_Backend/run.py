@@ -1,9 +1,16 @@
 import uvicorn
 import os
+import sys
 
 if __name__ == "__main__":
     # Ensure we are in the correct directory (optional but safer)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    
+    # Fix Windows asyncio socket errors
+    # Use ProactorEventLoop (standard for Windows) to avoid 'Data should not be empty' errors
+    if sys.platform == "win32":
+        import asyncio
+        asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
     
     print("Starting Hydration Backend on 0.0.0.0:8000...")
     
@@ -26,5 +33,8 @@ if __name__ == "__main__":
         host="0.0.0.0", 
         port=8000, 
         reload=True,
-        workers=1
+        workers=1,
+        timeout_keep_alive=30,
+        log_level="info",
     )
+

@@ -2,9 +2,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'video/camera_screen.dart';
+import 'video/video_upload_screen.dart';
 import 'audio/audio_upload_screen.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 
 class CheckStateScreen extends StatefulWidget {
   final bool isVideoFlow;
@@ -23,6 +24,13 @@ class _CheckStateScreenState extends State<CheckStateScreen>
   late Animation<double> _scaleAnimation;
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
+
+  // Backend data
+  String? _lastEmotion;
+  bool _hasPrevious = false;
+  List<dynamic> _recommendations = [];
+  Map<String, dynamic> _recContext = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -57,6 +65,71 @@ class _CheckStateScreenState extends State<CheckStateScreen>
 
     _fadeController.forward();
     _scaleController.forward();
+
+    _loadLastEmotion();
+  }
+
+  Future<void> _loadLastEmotion() async {
+    try {
+      final source = widget.isVideoFlow ? "video" : "audio";
+      final data = await ApiService.getLastEmotion(source: source);
+      if (mounted) {
+        setState(() {
+          _hasPrevious = data['has_previous'] ?? false;
+          _lastEmotion = data['emotion'];
+          _recommendations = data['recommendations'] ?? [];
+          _recContext = (data['rec_context'] as Map<String, dynamic>?) ?? {};
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasPrevious = false;
+        });
+      }
+    }
+  }
+
+  IconData _getEmotionIcon(String? emotion) {
+    switch ((emotion ?? '').toLowerCase()) {
+      case 'happy':
+        return Icons.sentiment_very_satisfied;
+      case 'sad':
+        return Icons.sentiment_dissatisfied;
+      case 'angry':
+        return Icons.mood_bad;
+      case 'fear':
+        return Icons.sentiment_neutral;
+      case 'surprise':
+        return Icons.sentiment_satisfied;
+      case 'disgust':
+        return Icons.sick_outlined;
+      case 'neutral':
+      default:
+        return Icons.sentiment_satisfied;
+    }
+  }
+
+  Color _getEmotionColor(String? emotion) {
+    switch ((emotion ?? '').toLowerCase()) {
+      case 'happy':
+        return Colors.greenAccent;
+      case 'sad':
+        return Colors.blueAccent;
+      case 'angry':
+        return Colors.redAccent;
+      case 'fear':
+        return Colors.purpleAccent;
+      case 'surprise':
+        return Colors.orangeAccent;
+      case 'disgust':
+        return Colors.tealAccent;
+      case 'neutral':
+      default:
+        return Colors.greenAccent;
+    }
   }
 
   @override
@@ -79,7 +152,7 @@ class _CheckStateScreenState extends State<CheckStateScreen>
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
@@ -219,7 +292,9 @@ class _CheckStateScreenState extends State<CheckStateScreen>
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'Are you still experiencing the previously detected emotional state?',
+                                  _hasPrevious
+                                      ? 'Are you still experiencing the previously detected emotional state?'
+                                      : 'No previous emotional state detected.\nStart a new analysis to begin tracking.',
                                   textAlign: TextAlign.center,
                                   style: GoogleFonts.exo2(
                                     fontSize: 16,
@@ -239,58 +314,95 @@ class _CheckStateScreenState extends State<CheckStateScreen>
                     // Previous State Display
                     FadeTransition(
                       opacity: _fadeAnimation,
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: accentColor.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
+                      child: _isLoading
+                          ? Container(
+                              padding: const EdgeInsets.all(20),
                               decoration: BoxDecoration(
-                                color: Colors.greenAccent.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: accentColor.withValues(alpha: 0.3)),
                               ),
-                              child: const Icon(
-                                Icons.sentiment_satisfied,
-                                color: Colors.greenAccent,
-                                size: 24,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20, height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: accentColor.withValues(alpha: 0.5),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Loading previous state...',
+                                    style: GoogleFonts.exo2(fontSize: 14, color: Colors.white54),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: _hasPrevious
+                                      ? _getEmotionColor(_lastEmotion).withValues(alpha: 0.3)
+                                      : accentColor.withValues(alpha: 0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: (_hasPrevious
+                                              ? _getEmotionColor(_lastEmotion)
+                                              : Colors.white38)
+                                          .withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      _hasPrevious
+                                          ? _getEmotionIcon(_lastEmotion)
+                                          : Icons.help_outline,
+                                      color: _hasPrevious
+                                          ? _getEmotionColor(_lastEmotion)
+                                          : Colors.white38,
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        'LAST DETECTED',
+                                        style: GoogleFonts.orbitron(
+                                          fontSize: 10,
+                                          color: Colors.white54,
+                                          letterSpacing: 1
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _hasPrevious
+                                            ? (_lastEmotion ?? 'Unknown').toUpperCase()
+                                            : 'NO DATA YET',
+                                        style: GoogleFonts.exo2(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'LAST DETECTED',
-                                  style: GoogleFonts.orbitron(
-                                    fontSize: 10,
-                                    color: Colors.white54,
-                                    letterSpacing: 1
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'CALM & FOCUSED',
-                                  style: GoogleFonts.exo2(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
 
                     const SizedBox(height: 32),
@@ -312,7 +424,7 @@ class _CheckStateScreenState extends State<CheckStateScreen>
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => const CameraScreen(), // Will need to update export if conflicts
+                                      builder: (_) => const VideoUploadScreen(),
                                     ),
                                   );
                                 } else {
@@ -409,7 +521,12 @@ class _CheckStateScreenState extends State<CheckStateScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _RecommendationsSheet(accentColor: accentColor),
+      builder: (context) => _RecommendationsSheet(
+        accentColor:     accentColor,
+        lastEmotion:     _lastEmotion,
+        recommendations: _recommendations,
+        recContext:      _recContext,
+      ),
     );
   }
 }
@@ -419,8 +536,16 @@ class _CheckStateScreenState extends State<CheckStateScreen>
 // ============================================
 class _RecommendationsSheet extends StatefulWidget {
   final Color accentColor;
+  final String? lastEmotion;
+  final List<dynamic> recommendations;
+  final Map<String, dynamic> recContext;
 
-  const _RecommendationsSheet({required this.accentColor});
+  const _RecommendationsSheet({
+    required this.accentColor,
+    this.lastEmotion,
+    this.recommendations = const [],
+    this.recContext = const {},
+  });
 
   @override
   State<_RecommendationsSheet> createState() => _RecommendationsSheetState();
@@ -430,33 +555,6 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-
-  final List<Map<String, dynamic>> _recommendations = [
-    {
-      'icon': Icons.self_improvement,
-      'title': 'MINDFULNESS',
-      'description': 'Take 5 minutes for meditation',
-      'color': Colors.purpleAccent,
-    },
-    {
-      'icon': Icons.music_note,
-      'title': 'MUSIC THERAPY',
-      'description': 'Calming playlist recommended',
-      'color': Colors.pinkAccent,
-    },
-    {
-      'icon': Icons.directions_walk,
-      'title': 'ACTIVE BREAK',
-      'description': '10-minute outdoor walk',
-      'color': Colors.cyanAccent,
-    },
-    {
-      'icon': Icons.water_drop,
-      'title': 'HYDRATION',
-      'description': 'Drink a glass of water',
-      'color': Colors.blueAccent,
-    },
-  ];
 
   @override
   void initState() {
@@ -471,14 +569,86 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
     _controller.forward();
   }
 
+  String _buildSubtitle(Map<String, dynamic> ctx) {
+    if (ctx.isEmpty) return 'Based on your emotional state';
+    if (ctx['is_first_time'] == true)  return 'Welcome! Here are your first-session tips';
+    if (ctx['is_chronic']   == true)   return 'Extended support — you\'re not alone 💙';
+    if (ctx['is_improving'] == true)   return 'You\'re improving — keep it up! 📈';
+    final time = ctx['time_context'] as String? ?? 'day';
+    return 'Tailored for your ${time[0].toUpperCase()}${time.substring(1)}';
+  }
+
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
+  Color _getEmotionColor(String? emotion) {
+    switch ((emotion ?? '').toLowerCase()) {
+      case 'happy':
+        return Colors.greenAccent;
+      case 'sad':
+        return Colors.blueAccent;
+      case 'angry':
+        return Colors.redAccent;
+      case 'fear':
+        return Colors.purpleAccent;
+      case 'surprise':
+        return Colors.orangeAccent;
+      case 'disgust':
+        return Colors.tealAccent;
+      case 'neutral':
+      default:
+        return Colors.greenAccent;
+    }
+  }
+
+  IconData _getEmotionIcon(String? emotion) {
+    switch ((emotion ?? '').toLowerCase()) {
+      case 'happy':
+        return Icons.sentiment_very_satisfied;
+      case 'sad':
+        return Icons.sentiment_dissatisfied;
+      case 'angry':
+        return Icons.mood_bad;
+      case 'fear':
+        return Icons.sentiment_neutral;
+      case 'surprise':
+        return Icons.sentiment_satisfied;
+      case 'disgust':
+        return Icons.sick_outlined;
+      case 'neutral':
+      default:
+        return Icons.sentiment_satisfied;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final emotionColor = _getEmotionColor(widget.lastEmotion);
+    final emotionIcon = _getEmotionIcon(widget.lastEmotion);
+    final emotionLabel = (widget.lastEmotion ?? 'Unknown').toUpperCase();
+
+    // Build recommendation items from API data or use defaults
+    final List<Map<String, dynamic>> recItems = widget.recommendations.isNotEmpty
+        ? widget.recommendations.asMap().entries.map((entry) {
+            final icons = [Icons.self_improvement, Icons.music_note, Icons.directions_walk, Icons.water_drop, Icons.favorite, Icons.local_cafe];
+            final colors = [Colors.purpleAccent, Colors.pinkAccent, Colors.cyanAccent, Colors.blueAccent, Colors.redAccent, Colors.orangeAccent];
+            return {
+              'icon': icons[entry.key % icons.length],
+              'title': 'SUGGESTION ${entry.key + 1}',
+              'description': entry.value.toString(),
+              'color': colors[entry.key % colors.length],
+            };
+          }).toList()
+        : [
+            {'icon': Icons.self_improvement, 'title': 'MINDFULNESS', 'description': 'Take 5 minutes for meditation', 'color': Colors.purpleAccent},
+            {'icon': Icons.music_note, 'title': 'MUSIC THERAPY', 'description': 'Calming playlist recommended', 'color': Colors.pinkAccent},
+            {'icon': Icons.directions_walk, 'title': 'ACTIVE BREAK', 'description': '10-minute outdoor walk', 'color': Colors.cyanAccent},
+            {'icon': Icons.water_drop, 'title': 'HYDRATION', 'description': 'Drink a glass of water', 'color': Colors.blueAccent},
+          ];
+
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
       child: BackdropFilter(
@@ -535,10 +705,10 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Based on your emotional state',
+                                _buildSubtitle(widget.recContext),
                                 style: GoogleFonts.exo2(
-                                  fontSize: 14,
-                                  color: Colors.white60,
+                                  fontSize: 12,
+                                  color: widget.accentColor.withValues(alpha: 0.8),
                                 ),
                               ),
                             ],
@@ -555,13 +725,13 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
                       child: Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.greenAccent.withValues(alpha: 0.1),
+                          color: emotionColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.3)),
+                          border: Border.all(color: emotionColor.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.sentiment_satisfied, color: Colors.greenAccent, size: 32),
+                            Icon(emotionIcon, color: emotionColor, size: 32),
                             const SizedBox(width: 16),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -576,7 +746,7 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'CALM & FOCUSED',
+                                  emotionLabel,
                                   style: GoogleFonts.exo2(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -593,7 +763,7 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
                     const SizedBox(height: 24),
 
                     // Recommendations List
-                    ..._recommendations.asMap().entries.map(
+                    ...recItems.asMap().entries.map(
                           (entry) => _buildRecommendationCard(entry.value, entry.key),
                         ),
 
@@ -621,7 +791,7 @@ class _RecommendationsSheetState extends State<_RecommendationsSheet>
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.of(context).popUntil((route) => route.isFirst);
+                              Navigator.of(context).pop();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: widget.accentColor,

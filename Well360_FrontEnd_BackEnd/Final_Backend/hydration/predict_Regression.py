@@ -2,6 +2,13 @@ import pandas as pd
 import numpy as np
 import requests
 from typing import Dict, Any, Tuple, List
+import sys
+import os
+from pathlib import Path
+
+# Add parent directory to path if running efficiently
+if __name__ == "__main__":
+    sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from core.config import MODEL_REG_PATH, MODEL_CLF_PATH, PREPROCESSOR_PATH, ENCODER_PATH
 from core.utils import setup_logging, load_pickle, calculate_unified_score
@@ -9,7 +16,6 @@ from hydration.feature_eng import apply_feature_engineering
 from sklearn.impute import SimpleImputer
 import shap
 import warnings
-from pathlib import Path
 
 LOG = setup_logging()
 warnings.filterwarnings("ignore", category=UserWarning) # Suppress SHAP/Sklearn version warnings
@@ -118,15 +124,95 @@ class AdvancedPredictor:
             LOG.warning(f"Failed to patch {type(model).__name__}: {e}")
 
     def validate_input(self, user_input: Dict[str, Any]):
+        """
+        🔥 IMPROVED: Comprehensive input validation with type and range checks
+        """
+        errors = []
+        
+        # 1. Check for missing fields
         missing = [f for f in RAW_REQUIRED_FIELDS if f not in user_input]
         if missing:
-            raise ValueError(f"Missing inputs: {missing}")
+            errors.append(f"Missing required fields: {missing}")
+        
+        # 2. Validate numeric fields (type and range)
+        numeric_validations = {
+            "Age": (1, 120, "years"),
+            "Weight": (20, 300, "kg"),
+            "Height": (50, 250, "cm"),
+            "Water_Intake_Last_4_Hours": (0, 10, "liters"),
+            "Exercise Time (minutes) in Last 4 Hours": (0, 240, "minutes"),
+            "Urine Color (Most Recent Urination)": (1, 8, "scale"),
+            "Temperature_C": (-20, 60, "Celsius"),
+            "Humidity_%": (0, 100, "percent")
+        }
+        
+        for field, (min_val, max_val, unit) in numeric_validations.items():
+            if field in user_input:
+                try:
+                    value = float(user_input[field])
+                    if not (min_val <= value <= max_val):
+                        errors.append(
+                            f"{field} out of range: {value} {unit} "
+                            f"(expected {min_val}-{max_val})"
+                        )
+                except (ValueError, TypeError):
+                    errors.append(f"{field} must be a number, got: {user_input[field]}")
+        
+        # 3. Validate categorical fields
+        valid_categories = {
+            "Gender": ["Male", "Female", "M", "F", "male", "female", "m", "f"],
+            "Physical_Activity_Level": ["Sedentary", "Light", "Moderate", "Heavy", "Very Heavy"],
+            "Urinated (Last 4 Hours)": ["Yes", "No", "yes", "no"],
+            "Thirsty (Right Now)": ["Yes", "No", "yes", "no"],
+            "Dizziness (Right Now)": ["Yes", "No", "yes", "no"],
+            "Fatigue / Tiredness (Right Now)": ["Yes", "No", "yes", "no"],
+            "Headache (Right Now)": ["Yes", "No", "yes", "no"],
+            "Sweating Level (Last 4 Hours)": ["None", "Light", "Moderate", "Heavy", "Very Heavy"]
+        }
+        
+        for field, valid_values in valid_categories.items():
+            if field in user_input:
+                value_str = str(user_input[field]).strip()
+                if value_str not in valid_values:
+                    errors.append(
+                        f"{field} has invalid value: '{value_str}' "
+                        f"(expected one of: {', '.join(valid_values[:3])}...)"
+                    )
+        
+        # 4. Validate time slot format
+        valid_time_slots = [
+            "Midnight-4 AM", "4 AM-8 AM", "8 AM-12 PM",
+            "12 PM-4 PM", "4 PM-8 PM", "8 PM-Midnight"
+        ]
+        time_slot_field = "Time Slot (Select Your Current 4-Hour Window)"
+        if time_slot_field in user_input:
+            if user_input[time_slot_field] not in valid_time_slots:
+                errors.append(
+                    f"Invalid time slot: '{user_input[time_slot_field]}' "
+                    f"(expected one of: {', '.join(valid_time_slots)})"
+                )
+        
+        # If any errors found, raise detailed exception
+        if errors:
+            error_message = "Input validation failed:\n" + "\n".join(f"  - {e}" for e in errors)
+            raise ValueError(error_message)
+        
+        LOG.info("[OK] Input validation passed")
+        return True
 
     def predict(self, user_input: Dict[str, Any]) -> Dict[str, Any]:
         if not self.is_loaded:
             self.load_models()
 
         self.validate_input(user_input)
+        
+        # Add missing columns that preprocessor expects (with default values)
+        if "User ID" not in user_input:
+            user_input["User ID"] = 1  # Default user ID
+        if "Caffeine Intake in Last 4 Hours" not in user_input:
+            user_input["Caffeine Intake in Last 4 Hours"] = 0  # Default: no caffeine
+        if "Heart Rate (Right Now)" not in user_input:
+            user_input["Heart Rate (Right Now)"] = 75  # Default: normal resting heart rate
         
         # 1. Feature Engineering (Metrics Calculation)
         df_raw = pd.DataFrame([user_input])
@@ -234,7 +320,8 @@ def get_current_weather(lat: float, lon: float) -> Tuple[float, float]:
         r.raise_for_status()
         c = r.json()["current"]
         return float(c["temperature_2m"]), float(c["relative_humidity_2m"])
-    except Exception:
+    except Exception as e:
+        LOG.warning(f"Weather API failed: {e}")
         return 25.0, 50.0
 
 # =====================================================

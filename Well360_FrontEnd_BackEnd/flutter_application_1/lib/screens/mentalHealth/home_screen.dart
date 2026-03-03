@@ -3,7 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'check_state_screen.dart';
+import 'video/stress_graph_screen.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
+import '../profile/profile_screen.dart';
+import 'compare_results_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -67,6 +70,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white70),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        title: Text(
+          'MENTAL HEALTH',
+          style: GoogleFonts.orbitron(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 2,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_outline_rounded, color: Colors.purpleAccent, size: 22),
+            tooltip: 'Profile',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen())),
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -137,21 +156,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
 
-                        const SizedBox(height: 30),
-
-                        // Title
-                        Text(
-                          'MENTAL\nASSESSMENT',
-                          style: GoogleFonts.orbitron(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
-                            height: 1.1,
-                          ),
-                        ),
-
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
                         // Subtitle
                         Text(
@@ -174,43 +179,92 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       position: _slideAnimation,
                       child: FadeTransition(
                         opacity: _fadeAnimation,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AnimatedOptionCard(
-                              title: 'VIDEO ANALYSIS',
-                              description: 'facial expressions & micro-movements',
-                              icon: Icons.videocam,
-                              color: Colors.cyanAccent,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const CheckStateScreen(isVideoFlow: true),
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: AnimatedOptionCard(
+                                      title: 'VIDEO\nANALYSIS',
+                                      description: 'facial expressions\n& micro-movements',
+                                      icon: Icons.videocam,
+                                      color: Colors.cyanAccent,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const CheckStateScreen(isVideoFlow: true),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            AnimatedOptionCard(
-                              title: 'AUDIO ANALYSIS',
-                              description: 'voice tone & frequency patterns',
-                              icon: Icons.mic_none,
-                              color: Colors.purpleAccent,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const CheckStateScreen(isVideoFlow: false),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: AnimatedOptionCard(
+                                      title: 'AUDIO\nANALYSIS',
+                                      description: 'voice tone & frequency',
+                                      icon: Icons.mic_none,
+                                      color: Colors.purpleAccent,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                const CheckStateScreen(isVideoFlow: false),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
-                          ],
+                                ],
+                              ),
+
+                              const SizedBox(height: 12),
+
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: AnimatedOptionCard(
+                                      title: 'STRESS\nHISTORY',
+                                      description: 'monitor stress levels',
+                                      icon: Icons.show_chart,
+                                      color: Colors.redAccent,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const StressGraphScreen(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: AnimatedOptionCard(
+                                      title: 'COMPARE\nRESULTS',
+                                      description: 'visual vs vocal',
+                                      icon: Icons.compare_arrows,
+                                      color: Colors.orangeAccent,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const CompareResultsScreen(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -321,7 +375,7 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(24),
@@ -330,43 +384,41 @@ class _AnimatedOptionCardState extends State<AnimatedOptionCard>
                   BoxShadow(color: widget.color.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 5))
                 ]
               ),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: widget.color.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                       boxShadow: [BoxShadow(color: widget.color.withValues(alpha: 0.2), blurRadius: 10)]
                     ),
-                    child: Icon(widget.icon, color: widget.color, size: 32),
+                    child: Icon(widget.icon, color: widget.color, size: 28),
                   ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.title,
-                          style: GoogleFonts.orbitron(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          widget.description,
-                          style: GoogleFonts.exo2(
-                            fontSize: 13,
-                            color: Colors.white60,
-                          ),
-                        ),
-                      ],
+                  const SizedBox(height: 16),
+                  Text(
+                    widget.title,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.orbitron(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios, size: 16, color: widget.color.withValues(alpha: 0.5)),
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.description,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.exo2(
+                      fontSize: 11,
+                      color: Colors.white60,
+                      height: 1.2
+                    ),
+                  ),
                 ],
               ),
             ),

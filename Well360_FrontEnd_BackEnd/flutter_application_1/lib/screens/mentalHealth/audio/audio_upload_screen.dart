@@ -1,10 +1,12 @@
 // lib/screens/mentalHealth/audio/audio_upload_screen.dart
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:ui';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_application_1/widgets/grid_painter.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 
 class AudioUploadScreen extends StatefulWidget {
   const AudioUploadScreen({super.key});
@@ -16,8 +18,11 @@ class AudioUploadScreen extends StatefulWidget {
 class _AudioUploadScreenState extends State<AudioUploadScreen>
     with TickerProviderStateMixin {
   String? _fileName;
+  String? _filePath;
+  Uint8List? _fileBytes;
   bool _isAnalyzing = false;
   Map<String, dynamic>? _analysisResult;
+  String? _errorMessage;
   
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -72,12 +77,21 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.audio,
+        withData: kIsWeb, // Get bytes on web
       );
 
       if (result != null) {
+        final file = result.files.single;
         setState(() {
-          _fileName = result.files.single.name;
+          _fileName = file.name;
+          if (kIsWeb) {
+            _filePath = null; // Do not access .path on web
+          } else {
+            _filePath = file.path;
+          }
+          _fileBytes = file.bytes;
           _analysisResult = null;
+          _errorMessage = null;
         });
       }
     } catch (e) {
@@ -90,29 +104,41 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
   Future<void> _analyzeAudio() async {
     setState(() {
       _isAnalyzing = true;
+      _errorMessage = null;
     });
 
     _progressController.forward(from: 0.0);
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 3));
+    try {
+      final result = await ApiService.predictAudioEmotion(
+        _filePath ?? '',
+        webBytes: _fileBytes,
+        fileName: _fileName,
+      );
 
-    if (mounted) {
-      setState(() {
-        _isAnalyzing = false;
-        _analysisResult = {
-          'emotion': 'Calm',
-          'confidence': 0.85,
-          'tone': 'Steady',
-          'energy': 'Moderate',
-          'recommendations': [
-            'Your voice shows great emotional balance',
-            'Consider voice training to enhance clarity',
-            'Practice breathing exercises for better control',
-            'Stay hydrated for optimal voice health',
-          ]
-        };
-      });
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _analysisResult = {
+            'emotion':         result['emotion']         ?? 'Unknown',
+            'confidence':      (result['confidence']     ?? 0.0).toDouble(),
+            'tone':            result['tone']            ?? 'Unknown',
+            'energy':          result['energy']          ?? 'Unknown',
+            'recommendations': result['recommendations'] ?? [
+              'Analysis complete. Stay mindful of your emotional state.',
+            ],
+            'rec_context':     result['rec_context']     ?? {},
+          };
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+        _showErrorSnackBar(_errorMessage!);
+      }
     }
   }
 
@@ -336,6 +362,31 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
                       ),
                     ),
 
+                    // Error Message
+                    if (_errorMessage != null && _analysisResult == null) ...[
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.warning_amber_rounded, color: Colors.redAccent, size: 20),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: GoogleFonts.exo2(fontSize: 12, color: Colors.redAccent),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     // Analyze Button
                     if (_fileName != null && _analysisResult == null) ...[
                       const SizedBox(height: 32),
@@ -351,7 +402,7 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
                           ],
                         ),
                         child: Material(
-                          color: Colors.purpleAccent, // Button color
+                          color: Colors.purpleAccent,
                           borderRadius: BorderRadius.circular(16),
                           child: InkWell(
                             onTap: _isAnalyzing ? null : _analyzeAudio,
@@ -496,6 +547,10 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
                       const SizedBox(height: 20),
                       
                       // Recommendations Section
+                      _buildPersonalizationBadge(
+                        (_analysisResult!['rec_context'] as Map<String, dynamic>?) ?? {},
+                      ),
+                      const SizedBox(height: 12),
                       _buildRecommendations(),
                       
                       const SizedBox(height: 32),
@@ -508,7 +563,10 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
                               onPressed: () {
                                 setState(() {
                                   _fileName = null;
+                                  _filePath = null;
+                                  _fileBytes = null;
                                   _analysisResult = null;
+                                  _errorMessage = null;
                                 });
                               },
                               style: OutlinedButton.styleFrom(
@@ -753,6 +811,82 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
     );
   }
 
+  Widget _buildPersonalizationBadge(Map<String, dynamic> ctx) {
+    if (ctx.isEmpty) return const SizedBox.shrink();
+
+    final isChronic   = ctx['is_chronic']    == true;
+    final isImproving = ctx['is_improving']  == true;
+    final isFirst     = ctx['is_first_time'] == true;
+    final timeCtx     = ctx['time_context']  as String? ?? 'day';
+    final sessCount   = (ctx['session_count'] as num?)?.toInt() ?? 1;
+
+    final String  label;
+    final Color   color;
+    final IconData icon;
+
+    if (isFirst) {
+      label = 'Welcome — First Session Recommendations';
+      color = Colors.cyanAccent;
+      icon  = Icons.waving_hand_rounded;
+    } else if (isChronic) {
+      label = 'Personalised: Extended Support Mode';
+      color = Colors.redAccent.shade100;
+      icon  = Icons.support_agent;
+    } else if (isImproving) {
+      label = 'Personalised: Improvement Streak 📈';
+      color = Colors.greenAccent;
+      icon  = Icons.trending_up_rounded;
+    } else {
+      label =
+          'Personalised for your ${timeCtx[0].toUpperCase()}${timeCtx.substring(1)} mood';
+      color = Colors.purpleAccent;
+      icon  = Icons.person_pin_rounded;
+    }
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 600),
+      builder: (context, v, _) => Opacity(
+        opacity: v,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: color.withValues(alpha: 0.30)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 15),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.exo2(
+                    fontSize: 11,
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Session $sessCount',
+                style: GoogleFonts.orbitron(
+                  fontSize: 9,
+                  color: color.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRecommendations() {
     final recommendations = _analysisResult!['recommendations'] as List;
     
@@ -799,24 +933,27 @@ class _AudioUploadScreenState extends State<AudioUploadScreen>
                           Container(
                             margin: const EdgeInsets.only(top: 2),
                             padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.greenAccent,
+                            decoration: BoxDecoration(
+                              color: Colors.purpleAccent.withValues(alpha: 0.2),
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.check,
-                              size: 10,
-                              color: Colors.black,
+                            child: Text(
+                              '${entry.key + 1}',
+                              style: GoogleFonts.orbitron(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purpleAccent,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              entry.value,
+                              entry.value.toString(),
                               style: GoogleFonts.exo2(
                                 fontSize: 14,
-                                height: 1.5,
                                 color: Colors.white70,
+                                height: 1.4,
                               ),
                             ),
                           ),

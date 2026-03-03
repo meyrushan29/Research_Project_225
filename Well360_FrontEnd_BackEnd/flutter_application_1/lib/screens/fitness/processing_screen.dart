@@ -119,7 +119,9 @@ class _ProcessingScreenState extends State<ProcessingScreen>
       if (!mounted) return;
       
       String errorMessage = e.toString().replaceAll("Exception:", "").trim();
-      bool isHumanError = errorMessage.contains("No human detected") || errorMessage.contains("visible for accurate analysis");
+      bool isHumanError = errorMessage.contains("human") || 
+                         errorMessage.contains("visible") ||
+                         errorMessage.contains("workout");
 
       showDialog(
         context: context,
@@ -140,9 +142,7 @@ class _ProcessingScreenState extends State<ProcessingScreen>
             ],
           ),
           content: Text(
-            isHumanError 
-                ? "We couldn't detect a person in the video.\n\nPlease ensure your full body is visible and the lighting is good for the AI to analyze your form."
-                : "An error occurred during analysis:\n\n$errorMessage",
+            errorMessage,
             style: GoogleFonts.exo2(color: Colors.white70, fontSize: 16),
           ),
           actions: [

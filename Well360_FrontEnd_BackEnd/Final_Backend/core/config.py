@@ -10,7 +10,7 @@ warnings.filterwarnings("ignore")
 # ======================================================
 BASE_DIR = Path(__file__).parent
 
-DATA_DIR = BASE_DIR.parent / "data"
+DATA_DIR = BASE_DIR.parent / "hydration" / "data"
 DATA_PATH = DATA_DIR / "dataset.csv"
 
 MODEL_DIR = BASE_DIR.parent / "hydration" / "models"
@@ -183,7 +183,7 @@ MOBILENET_MODEL_OUT = MODEL_DIR / "LipModel_MobileNetV2.pth"
 RESNET_MODEL_OUT = MODEL_DIR / "LipModel_ResNet18.pth"
 
 BATCH_SIZE = 8
-EPOCHS = 10
+EPOCHS = 25
 LR = 0.001
 IMG_SIZE = 224
 
